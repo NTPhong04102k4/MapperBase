@@ -75,3 +75,19 @@ yarn-error.log
 !.yarn/versions
 
 .env*
+
+.codebuddy
+.codex
+.continue
+.cursor
+.gemini
+.github
+.kiro
+.opencode
+.qoder
+.roo
+.trae
+.windsurf
+design-system
+.agent
+.claude
