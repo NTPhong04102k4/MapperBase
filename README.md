@@ -1,97 +1,364 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+## Mapper – Ghi chú cài đặt & tương thích (RN 0.79, New Arch/Fabric)
 
-# Getting Started
+Project dùng `react-native@0.79.0` với New Architecture (Fabric) và các lib:
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+- `react-native-reanimated@4.1.0`
+- `react-native-worklets@0.5.1`
+- `react-native-mmkv@4.x` (nitro)
+- `@react-navigation/native`, `@react-navigation/native-stack`
+- `react-native-screens@4.14.0` (bản 4.x hỗ trợ RN 0.79)
+- `react-native-gesture-handler`, `react-native-safe-area-context`
 
-## Step 1: Start Metro
+### 1. Yêu cầu môi trường
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **Node**: `>=18` (theo `package.json`).
+- Đã cài đủ Android SDK, JDK, trình giả lập như hướng dẫn chính thức React Native.
+- Sử dụng **Yarn** (khuyến nghị) cho đồng bộ dependency.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 2. Cài dependency từ đầu
 
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```bash
+yarn install
 ```
 
-## Step 2: Build and run your app
+### 2.1. Lúc nào cần clean?
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+- Sau khi đổi version dependency có native (ví dụ `react-native-screens`, `react-native-mmkv`, `react-native-reanimated`, `react-native-worklets`)
+- Hoặc sau khi bạn gặp lỗi build Kotlin/Gradle
 
-### Android
+## TutorialBase / Scripts (PowerShell)
 
-```sh
-# Using npm
-npm run android
+> Các lệnh dưới đây dùng cho Windows PowerShell, chạy từ `d:\user\Projects\Mapper` (root project).
 
-# OR using Yarn
+### A. Reset Metro cache (khi đổi babel)
+
+```powershell
+yarn start --reset-cache
+```
+
+### B. Clean Android build nhanh (Gradle only)
+
+```powershell
+cd android
+.\gradlew.bat clean
+cd ..
+```
+
+### C. Xóa build artifacts Android (khi lỗi compile/native)
+
+```powershell
+Remove-Item -Recurse -Force "android/app/.cxx" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android/app/build" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android/build" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android/.gradle" -ErrorAction SilentlyContinue
+
+cd android
+.\gradlew.bat clean
+cd ..
+```
+
+### D. Reset JS deps (khi nghi node_modules bị lẫn)
+
+```powershell
+Remove-Item -Recurse -Force "node_modules" -ErrorAction SilentlyContinue
+yarn install
+```
+
+### E. Reset “nặng” (xóa cả `yarn.lock`) khi nào?
+
+Chỉ dùng khi bạn muốn regen lock hoàn toàn (hoặc lockfile có vẻ mâu thuẫn).
+
+```powershell
+Remove-Item -Force "yarn.lock" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "node_modules" -ErrorAction SilentlyContinue
+yarn cache clean
+yarn install
+```
+
+### F. Lỗi Kotlin daemon/cache (Gradle) bị kẹt
+
+Đây là lỗi kiểu “Could not close/delete incremental caches …”.
+
+```powershell
+cd android
+.\gradlew.bat --stop
+cd ..
+
+Remove-Item -Recurse -Force "node_modules\@react-native\gradle-plugin\shared\build\kotlin" -ErrorAction SilentlyContinue
+
+cd android
+.\gradlew.bat clean
+cd ..
+```
+
+### 3. Bật New Architecture (Fabric) cho Android
+
+Mở `android/gradle.properties` và đảm bảo:
+
+```properties
+newArchEnabled=true
+hermesEnabled=true
+```
+
+Sau khi bật New Arch:
+
+```powershell
+cd android
+.\gradlew.bat clean
+cd ..
 yarn android
 ```
 
-### iOS
+### 4. Cấu hình Reanimated 4.x + react-native-worklets (New Architecture bắt buộc)
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+Theo tài liệu chính thức:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+- **Reanimated 4.x chỉ chạy trên React Native New Architecture (Fabric)**.
+- Reanimated 4.x **phụ thuộc** vào `react-native-worklets`:
+  - Reanimated 3 **không hoạt động** nếu cài `react-native-worklets`.
+  - Reanimated 4 **bắt buộc phải có** `react-native-worklets` đúng version.
 
-```sh
-bundle install
+#### 4.1. Version tương thích (đang dùng trong project)
+
+- `react-native`: **0.79.0**
+- `react-native-reanimated`: **4.1.x** → theo bảng hỗ trợ:
+
+  | Reanimated 4.x | RN 0.78 | RN 0.79 |
+  |----------------|---------|---------|
+  | **4.0.x**      | yes     | yes     |
+  | **4.1.x**      | yes     | yes     |
+  | 4.2.x          | no      | no      |
+  | 4.3.x          | no      | no      |
+
+- `react-native-worklets`: **0.5.x** → theo bảng hỗ trợ:
+
+  | Reanimated 4.x | 0.4.x | **0.5.x** | 0.6.x | 0.7.x | 0.8.x |
+  |----------------|-------|-----------|-------|-------|-------|
+  | **4.1.x**      | no    | **yes**   | yes   | yes   | yes   |
+
+=> Combo trong `package.json` (`react-native-reanimated@4.1.0` + `react-native-worklets@0.5.1`) **đã đúng với RN 0.79.0**.
+
+#### 4.2. Cấu hình Babel
+
+Với React Native Community CLI (dự án này), cần thêm plugin `react-native-worklets/plugin` **cuối cùng** trong `babel.config.js`:
+
+```js
+module.exports = {
+  presets: ['module:metro-react-native-babel-preset'],
+  plugins: [
+    // ... các plugin khác
+    '@babel/plugin-proposal-export-namespace-from', // nếu build web (tùy chọn)
+    'react-native-worklets/plugin', // PHẢI ở cuối
+  ],
+};
 ```
 
-Then, and every time you update your native dependencies, run:
+Lưu ý:
 
-```sh
-bundle exec pod install
+- **Không** thêm plugin `'react-native-reanimated/plugin'` nữa, vì với Reanimated 4, worklets được tách sang `react-native-worklets/plugin`.
+- Sau khi đổi Babel, luôn **xoá cache Metro**:
+
+```bash
+yarn start --reset-cache
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+#### 4.3. Ghi chú về “worklets”
 
-```sh
-# Using npm
-npm run ios
+- Từ Reanimated 4:
+  - Worklet runtime được cung cấp bởi **`react-native-worklets`** (tách khỏi package Reanimated).
+  - Mọi animation/gesture “kiểu mới” đều là **worklet** chạy trên UI thread.
+- Khi viết hàm custom worklet, vẫn dùng `"worklet";` đầu hàm như Reanimated 2/3.
 
-# OR using Yarn
-yarn ios
+### 5. Cấu hình React Navigation + react-native-screens
+
+1. Đảm bảo đã cài các package (được khai báo trong `package.json`):
+
+   - `@react-navigation/native`
+   - `@react-navigation/native-stack`
+   - `react-native-gesture-handler`
+   - `react-native-screens`
+   - `react-native-safe-area-context`
+
+2. Bật `react-native-screens`:
+
+```ts
+// App.tsx
+import { enableScreens } from 'react-native-screens';
+
+enableScreens();
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+3. (Tuỳ chọn) Bật thử nghiệm `react-freeze` để tối ưu hiệu năng (yêu cầu RN >= 0.68, `react-native-screens` >= 3.9.0):
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```ts
+import { enableFreeze } from 'react-native-screens';
 
-## Step 3: Modify your app
+enableFreeze(true);
+```
 
-Now that you have successfully run the app, let's make changes!
+4. Bọc app bằng `NavigationContainer` và `GestureHandlerRootView`:
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+```tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+const Stack = createNativeStackNavigator();
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {/* screens */}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
+```
 
-## Congratulations! :tada:
+5. Ghi chú tương thích `react-native-screens` 4.x và RN:
 
-You've successfully run and modified your React Native App. :partying_face:
+- Với RN 0.79.0, theo bảng tương thích chính thức:
+  - **Fabric** (New Architecture) được hỗ trợ từ:
 
-### Now what?
+    | `react-native-screens` | `react-native` |
+    |------------------------|----------------|
+    | `4.14.0+`             | `0.79.0+`      |
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+  - **Legacy (Paper)**:
 
-# Troubleshooting
+    | `react-native-screens` | `react-native` (legacy) |
+    |------------------------|-------------------------|
+    | `4.14.0+`             | `0.79.0+`               |
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+=> Dự án này dùng RN 0.79 nên cần tối thiểu `react-native-screens@4.14.0`.
 
-# Learn More
+### 5.2. Static navigation vs “dynamic navigation”
 
-To learn more about React Native, take a look at the following resources:
+Trong Mapper, **navigation được thiết kế static**:
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- Toàn bộ cây navigator (`Stack`, `Tab`, `Drawer`) được **khai báo tĩnh trong code** với TypeScript (`RootStackParamList`, v.v.).
+- Route name & params đều được type-safe, IDE hỗ trợ tốt.
+
+**Ưu điểm static navigation** (cách mà Mapper chọn):
+
+- **Type-safe & dễ maintain**: sai route/param báo lỗi compile thay vì crash runtime.
+- **Dễ tối ưu performance**: biết rõ trước số screen, dễ cấu hình `detachInactiveScreens`, `freezeOnBlur`, Reanimated transitions.
+- **Code rõ ràng**: một vài file navigator mô tả toàn bộ flow, dễ review và refactor.
+
+**Dynamic navigation** (ít dùng trong app này):
+
+- Navigator tree sinh từ dữ liệu runtime (JSON config, role, feature flag…).
+- Linh hoạt cho white-label/B2B, nhưng:
+  - Khó type-safe, nhiều string literal.
+  - Debug khó, logic phức tạp hơn (đặc biệt với Fabric + nhiều lib native).
+
+Với RN 0.79 + Fabric + Reanimated 4 + `react-native-screens`, **static navigation** là lựa chọn mặc định để giữ code đơn giản, ổn định nhưng vẫn đủ mạnh cho hầu hết use case.
+
+### 5.1. Ghi chú MainActivity cho Android (tránh crash khi Activity restart)
+
+Theo tài liệu `react-native-screens`, trên Android state của `View` có thể không được khôi phục nhất quán khi Activity restart, dễ dẫn đến crash. Khuyến nghị **override** method `onCreate` trong `MainActivity` và gọi `super.onCreate(null)` để bỏ state cũ.
+
+#### Kotlin (`MainActivity.kt`)
+
+```kotlin
+import android.os.Bundle
+import com.facebook.react.ReactActivity
+
+class MainActivity : ReactActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // react-native-screens override (theo docs)
+    super.onCreate(null)
+  }
+}
+```
+
+Lưu ý:
+
+- Đặt override `onCreate` **trong `MainActivity`**, **không** đặt trong `MainActivityDelegate`.
+
+### 6. Cấu hình react-native-mmkv (Nitro + New Arch)
+
+`react-native-mmkv@4` đã hỗ trợ New Arch và `react-native-nitro-modules`, nên trên Android hầu như **không cần** cấu hình manual.
+
+Ví dụ store đơn giản:
+
+```ts
+import { MMKV } from 'react-native-mmkv';
+
+export const storage = new MMKV();
+
+export function setString(key: string, value: string) {
+  storage.set(key, value);
+}
+
+export function getString(key: string) {
+  return storage.getString(key);
+}
+```
+
+Khi build lần đầu sau khi thêm MMKV:
+
+```powershell
+cd android
+.\gradlew.bat clean
+cd ..
+yarn android
+```
+
+### 7. Ghi chú tương thích & lỗi `react-native-screens` (Android)
+
+Lỗi bạn gặp:
+
+```text
+Class 'BottomSheetDialogRootView' is not abstract and does not implement abstract member 'onChildStartedNativeGesture'
+... 'onChildStartedNativeGesture' overrides nothing
+... 'getPointerEvents' overrides nothing
+```
+
+**Nguyên nhân**: API gesture/pointer bên React Native Android (từ 0.78/0.79) đã thay đổi, trong khi version `react-native-screens` bạn đang dùng (`"react-native-screens": "4.3.0"`) vẫn dùng API cũ (`onChildStartedNativeGesture`, `getPointerEvents` cũ), dẫn tới Kotlin báo class không implement/override đúng method.
+
+**Cách khắc phục**:
+
+- Nâng `react-native-screens` lên bản 4.x mới hơn đã hỗ trợ RN 0.79 (ví dụ):
+
+```json
+"react-native-screens": "4.14.0"
+```
+
+- Sau đó chạy lại:
+
+```powershell
+yarn install
+cd android
+.\gradlew.bat clean
+cd ..
+yarn android
+```
+
+Nếu vẫn lỗi, hãy đảm bảo:
+
+- Không còn bản cũ của `react-native-screens` bị cache trong `android/.gradle` hoặc `android/app/build`.
+- Toàn bộ node_modules được cài lại bằng `yarn install` (không trộn `npm` và `yarn`).
+
+### 8. Quy trình build chuẩn cho Android (RN 0.79 + New Arch)
+
+```bash
+yarn install
+yarn start --reset-cache   # tab 1
+
+cd android
+.\gradlew.bat clean            # khi đổi version lib native
+cd ..
+
+yarn android               # tab 2
+```
+
+Nếu gặp lỗi Gradle/Kotlin:
+
+- Đọc kỹ phần `:react-native-screens:compileDebugKotlin` hoặc lib nào đang fail.
+- Kiểm tra lại version lib đó có support RN 0.79/New Arch chưa, update lên bản mới nhất 4.x/5.x tương thích.
