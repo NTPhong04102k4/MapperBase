@@ -1,0 +1,162 @@
+{
+  // Yêu cầu extension: msjsdiag.vscode-react-native (React Native Tools)
+  //   code --install-extension msjsdiag.vscode-react-native
+  //
+  // Quy ước tên khớp với package.json + android/app/build.gradle + ios/Config:
+  //   Android variant : devDebug / stagingDebug / prodDebug
+  //   iOS scheme      : "Mapper Dev" / "Mapper Staging" / "Mapper"
+  //   iOS config      : "Debug Dev" / "Debug Staging" / "Debug Prod"
+  //
+  // JDK: các config Android chạy Gradle nên cần JAVA_HOME trỏ JDK 17–21.
+  // AGP 8.x fail với JDK 11 ("requires Java 17 to run"), Gradle 8.13 chưa hỗ trợ
+  // Java 24+. VS Code lấy JAVA_HOME từ môi trường hệ thống, nên nếu build báo lỗi
+  // Java version thì set JAVA_HOME ở shell profile (~/.zshrc), ví dụ:
+  //   export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+  //   # hoặc JDK của Android Studio:
+  //   export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+  // rồi mở lại VS Code. `make android` không cần bước này — Makefile tự dò JDK.
+  "version": "0.2.0",
+  "configurations": [
+    /* ------------------------------------------------------------------ *
+     *  ANDROID — build + install + attach debugger (Hermes)
+     * ------------------------------------------------------------------ */
+    {
+      "name": "Android Dev (debug)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "android",
+      "cwd": "${workspaceFolder}",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "runArguments": ["--mode=devDebug", "--appId", "com.mapper.dev"]
+    },
+    {
+      "name": "Android Staging (debug)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "android",
+      "cwd": "${workspaceFolder}",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "runArguments": ["--mode=stagingDebug", "--appId", "com.mapper.staging"]
+    },
+    {
+      "name": "Android Prod (debug)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "android",
+      "cwd": "${workspaceFolder}",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "runArguments": ["--mode=prodDebug", "--appId", "com.mapper"]
+    },
+
+    /* ------------------------------------------------------------------ *
+     *  iOS — cần đã tạo đủ 6 build configuration + 3 scheme theo docs/07
+     * ------------------------------------------------------------------ */
+    {
+      "name": "iOS Dev (simulator)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "ios",
+      "cwd": "${workspaceFolder}",
+      "target": "simulator",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "scheme": "Mapper Dev",
+      "runArguments": ["--scheme", "Mapper Dev", "--mode", "Debug Dev"]
+    },
+    {
+      "name": "iOS Staging (simulator)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "ios",
+      "cwd": "${workspaceFolder}",
+      "target": "simulator",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "scheme": "Mapper Staging",
+      "runArguments": ["--scheme", "Mapper Staging", "--mode", "Debug Staging"]
+    },
+    {
+      "name": "iOS Prod (device)",
+      "type": "reactnative",
+      "request": "launch",
+      "platform": "ios",
+      "cwd": "${workspaceFolder}",
+      "target": "device",
+      "useHermesEngine": true,
+      "enableDebug": true,
+      "scheme": "Mapper",
+      "runArguments": ["--scheme", "Mapper", "--mode", "Debug Prod"]
+    },
+
+    /* ------------------------------------------------------------------ *
+     *  ATTACH — app đã chạy sẵn trên máy/simulator (`make android` /
+     *  `make ios`), chỉ nối debugger vào. Dùng nhiều nhất trong ngày.
+     * ------------------------------------------------------------------ */
+    {
+      "name": "Attach to app (Hermes)",
+      "type": "reactnative",
+      "request": "attach",
+      "cwd": "${workspaceFolder}",
+      "useHermesEngine": true,
+      "port": 8081
+    },
+    {
+      "name": "Attach to Metro on device thật (adb reverse)",
+      "type": "reactnative",
+      "request": "attach",
+      "cwd": "${workspaceFolder}",
+      "useHermesEngine": true,
+      "port": 8081,
+      "address": "localhost"
+    },
+
+    /* ------------------------------------------------------------------ *
+     *  JEST — debug test trong Node, không cần thiết bị
+     * ------------------------------------------------------------------ */
+    {
+      "name": "Jest: file đang mở",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["--runInBand", "--no-coverage", "--watchAll=false", "${relativeFile}"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true
+    },
+    {
+      "name": "Jest: toàn bộ test",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["--runInBand", "--no-coverage", "--watchAll=false"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true
+    },
+
+    /* ------------------------------------------------------------------ *
+     *  SCRIPT NODE — debug scripts/bump.js (versioning)
+     * ------------------------------------------------------------------ */
+    {
+      "name": "Script: bump.js print",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/scripts/bump.js",
+      "args": ["print"],
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Dev: Android + attach",
+      "configurations": ["Android Dev (debug)"],
+      "stopAll": true
+    }
+  ]
+}
