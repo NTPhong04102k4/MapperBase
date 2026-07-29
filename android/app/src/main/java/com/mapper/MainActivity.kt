@@ -1,28 +1,31 @@
 package com.mapper
 
+import android.os.Bundle
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import android.os.Bundle
+import com.mapper.splash.SplashGate
 
 class MainActivity : ReactActivity() {
 
-  /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
-   * rendering of the component.
-   */
   override fun getMainComponentName(): String = "Mapper"
 
-  /**
-   * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-   * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
-   */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
-  // react-native-screens override (needed to avoid Activity restart inconsistencies)
   override fun onCreate(savedInstanceState: Bundle?) {
+    // installSplashScreen() PHẢI gọi TRƯỚC super.onCreate(): sau đó window đã
+    // dựng bằng theme cũ và splash sẽ không hiện.
+    val splashScreen = installSplashScreen()
+
+    // Giữ splash cho tới khi JS gọi SplashScreen.hide(). Thiếu bước này thì
+    // splash tắt ngay khi Activity dựng xong và người dùng thấy một khoảng
+    // trắng trong lúc RN còn đang nạp bundle.
+    splashScreen.setKeepOnScreenCondition { SplashGate.isVisible }
+
+    // react-native-screens: truyền null để tránh Activity restart lệch state.
     super.onCreate(null)
   }
 }

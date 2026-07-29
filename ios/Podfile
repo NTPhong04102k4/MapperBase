@@ -8,6 +8,21 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  FLAVOR iOS = build configurations, KHÔNG phải target riêng.
+#  CocoaPods bắt buộc phải biết mỗi configuration là debug hay release; nếu
+#  không khai, nó mặc định coi là release và bản Debug sẽ mất dev menu/symbol.
+#  Tên configuration phải khớp đúng với Xcode — xem docs/07-IOS-FLAVOR-XCODE.md.
+# ─────────────────────────────────────────────────────────────────────────────
+project 'Mapper', {
+  'Debug Dev'       => :debug,
+  'Debug Staging'   => :debug,
+  'Debug Prod'      => :debug,
+  'Release Dev'     => :release,
+  'Release Staging' => :release,
+  'Release Prod'    => :release,
+}
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -23,13 +38,31 @@ target 'Mapper' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  # ForgeRock IAM SDK — không có wrapper RN chính thức nên ta tự viết native
+  # module: ios/Mapper/Auth/ForgeRockModule.swift
+  pod 'FRAuth', '~> 4.8.0'
+
+  # Widget extension: TUYỆT ĐỐI không nhúng React Native vào đây.
+  # Widget bị giới hạn bộ nhớ (~30MB) — nạp RN runtime là bị OS kill ngay.
+  target 'MapperWidgetExtension' do
+    inherit! :none
+  end
+
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb
     react_native_post_install(
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Đồng bộ deployment target cho mọi pod — Firebase 25 kéo min iOS lên cao,
+    # giữ khớp với IPHONEOS_DEPLOYMENT_TARGET ở ios/Config/Base.xcconfig.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |cfg|
+        cfg.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+      end
+    end
   end
 end

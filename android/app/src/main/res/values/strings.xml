@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Mapper</string>
+    <!-- app_name KHÔNG khai ở đây: nó là resValue sinh ra theo productFlavor
+         trong android/app/build.gradle (Mapper / Mapper Staging / Mapper Dev).
+         Khai lại ở đây sẽ gây lỗi "Duplicate resources". -->
+    <string name="widget_title">Mapper</string>
+    <string name="widget_description">Xem nhanh thông tin Mapper ngay trên màn hình chính</string>
+    <string name="widget_login_required">Đăng nhập để xem thông tin</string>
+    <string name="widget_open_app">Mở ứng dụng</string>
+    <string name="widget_loading">Đang tải…</string>
+    <string name="default_notification_channel_id">mapper_default</string>
 </resources>

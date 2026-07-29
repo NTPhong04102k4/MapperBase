@@ -1,0 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  Base.xcconfig — thiết lập dùng chung cho MỌI configuration.
+//  Version nằm ở Version.xcconfig (do scripts/bump.js sinh ra).
+//  Từng flavor override ở Dev/Staging/Prod.xcconfig.
+// ─────────────────────────────────────────────────────────────────────────────
+
+#include "Version.xcconfig"
+
+PRODUCT_NAME = Mapper
+IPHONEOS_DEPLOYMENT_TARGET = 15.1
+SWIFT_VERSION = 5.0
+TARGETED_DEVICE_FAMILY = 1,2
+
+// Bật Sign in with Apple / Push / App Groups qua file .entitlements
+CODE_SIGN_ENTITLEMENTS = Mapper/Mapper.entitlements
+
+// Host API — chỉ khác nhau ở subdomain, cổng 443 là mặc định của https.
+// Ghi rõ :443 trong Info.plist là thừa và dễ làm hỏng ATS, nên chỉ để scheme+host.
+API_SCHEME = https
+
+// Dùng cho URL scheme (deep link) và OAuth2 redirect
+// (Xcode nuốt ký tự "//" trong xcconfig -> không viết URL đầy đủ ở đây)

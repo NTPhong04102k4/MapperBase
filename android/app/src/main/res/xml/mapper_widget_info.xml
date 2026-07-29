@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis = 30 phút.
+  ⚠️ Mọi giá trị DƯỚI 30 phút bị hệ thống làm tròn lên 30 phút — đặt 5 phút
+  ở đây là vô nghĩa. Nhịp 5 phút đạt được bằng:
+    1. WorkManager (sàn 15 phút) cho phần dữ liệu server, và
+    2. Chronometer/TextClock cho phần suy ra từ thời gian (chạy trong process
+       của launcher, không cần đánh thức app).
+  Xem docs/05-CHOT-QUYET-DINH.md mục 4.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:initialLayout="@layout/widget_loading"
+    android:updatePeriodMillis="1800000" />

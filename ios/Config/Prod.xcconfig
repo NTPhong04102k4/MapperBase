@@ -1,0 +1,19 @@
+#include "Base.xcconfig"
+
+FLAVOR_ENV = prod
+PRODUCT_BUNDLE_IDENTIFIER = com.mapper
+DISPLAY_NAME = Mapper
+
+CURRENT_PROJECT_VERSION = $(BUILD_NUMBER_PROD)
+
+API_HOST = hrapi.ttmedic.vn
+FORGEROCK_HOST = hrapi.ttmedic.vn
+FORGEROCK_REALM = alpha
+SEPAY_ENV = production
+WIDGET_REFRESH_MINUTES = 5
+
+APP_SCHEME = mapper
+APP_GROUP = group.com.mapper
+WIDGET_BUNDLE_ID = com.mapper.widget
+
+FIREBASE_CONFIG_DIR = prod

@@ -1,0 +1,8 @@
+<resources>
+    <!-- Giữ đồng bộ với src/theme/palette.ts -->
+    <color name="brand_primary">#2563EB</color>
+    <color name="splash_background">#FFFFFF</color>
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_text_primary">#0F172A</color>
+    <color name="widget_text_secondary">#64748B</color>
+</resources>

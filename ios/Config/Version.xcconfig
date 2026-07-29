@@ -1,0 +1,8 @@
+// TỰ ĐỘNG SINH RA bởi scripts/bump.js — ĐỪNG sửa tay.
+// Nguồn sự thật là package.json (version + buildNumbers).
+
+MARKETING_VERSION = 1.0.0
+
+BUILD_NUMBER_DEV = 1
+BUILD_NUMBER_STAGING = 1
+BUILD_NUMBER_PROD = 1

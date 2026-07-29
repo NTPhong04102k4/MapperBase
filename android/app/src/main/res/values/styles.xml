@@ -1,9 +1,24 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!-- Theme thật của app sau khi splash tắt -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+
+    <!--
+      Splash screen dùng androidx.core:core-splashscreen.
+      Đây là theme LAUNCH, khai trong <activity android:theme="...">.
+      MainActivity.onCreate() gọi installSplashScreen() rồi hệ thống tự đổi
+      sang postSplashScreenTheme (@style/AppTheme).
+      Ưu điểm so với "một Activity splash riêng": không có frame trắng,
+      hoạt động đồng nhất từ API 21 tới Android 15+.
+    -->
+    <style name="AppTheme.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">400</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
     </style>
 
 </resources>

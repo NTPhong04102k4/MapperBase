@@ -1,0 +1,19 @@
+#include "Base.xcconfig"
+
+FLAVOR_ENV = staging
+PRODUCT_BUNDLE_IDENTIFIER = com.mapper.staging
+DISPLAY_NAME = Mapper Staging
+
+CURRENT_PROJECT_VERSION = $(BUILD_NUMBER_STAGING)
+
+API_HOST = staging.hrapi.ttmedic.vn
+FORGEROCK_HOST = staging.hrapi.ttmedic.vn
+FORGEROCK_REALM = alpha
+SEPAY_ENV = sandbox
+WIDGET_REFRESH_MINUTES = 5
+
+APP_SCHEME = mapperstg
+APP_GROUP = group.com.mapper.staging
+WIDGET_BUNDLE_ID = com.mapper.staging.widget
+
+FIREBASE_CONFIG_DIR = staging

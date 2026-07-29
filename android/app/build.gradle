@@ -1,75 +1,58 @@
+import groovy.json.JsonSlurper
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "org.jetbrains.kotlin.plugin.compose"   // cần cho Glance widget (Jetpack Compose)
 apply plugin: "com.facebook.react"
 
-/**
- * This is the configuration block to customize your React Native Android app.
- * By default you don't need to apply any configuration, just uncomment the lines you need.
- */
-react {
-    /* Folders */
-    //   The root of your project, i.e. where "package.json" lives. Default is '../..'
-    // root = file("../../")
-    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
-    // reactNativeDir = file("../../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
-    // codegenDir = file("../../node_modules/@react-native/codegen")
-    //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
-    // cliFile = file("../../node_modules/react-native/cli.js")
-
-    /* Variants */
-    //   The list of variants to that are debuggable. For those we're going to
-    //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
-    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "prodDebug"]
-
-    /* Bundling */
-    //   A list containing the node command and its flags. Default is just 'node'.
-    // nodeExecutableAndArgs = ["node"]
-    //
-    //   The command to run when bundling. By default is 'bundle'
-    // bundleCommand = "ram-bundle"
-    //
-    //   The path to the CLI configuration file. Default is empty.
-    // bundleConfig = file(../rn-cli.config.js)
-    //
-    //   The name of the generated asset file containing your JS bundle
-    // bundleAssetName = "MyApplication.android.bundle"
-    //
-    //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
-    // entryFile = file("../js/MyApplication.android.js")
-    //
-    //   A list of extra flags to pass to the 'bundle' commands.
-    //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
-    // extraPackagerArgs = []
-
-    /* Hermes Commands */
-    //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
-    //
-    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
-    // hermesFlags = ["-O", "-output-source-map"]
-
-    /* Autolinking */
-    autolinkLibrariesWithApp()
+// google-services chỉ apply khi thật sự có file config, để base vẫn build được
+// khi chưa tải google-services.json về (xem android/app/src/<flavor>/README.md).
+def hasAnyGoogleServices = ["dev", "staging", "prod"].any {
+    file("src/${it}/google-services.json").exists()
+}
+if (hasAnyGoogleServices) {
+    apply plugin: "com.google.gms.google-services"
 }
 
-/**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
- */
-def enableProguardInReleaseBuilds = false
+/* ------------------------------------------------------------------ *
+ *  NGUỒN SỰ THẬT VERSION = package.json
+ *
+ *    "version": "1.2.3"                                  <- versionName, chung
+ *    "buildNumbers": { "dev": 46, "staging": 12, ... }   <- versionCode, TÁCH
+ *
+ *  Không bao giờ sửa versionCode/versionName trong file này nữa.
+ *  Đổi số: `yarn bump:dev` / `yarn bump:prod` / `yarn release:patch`
+ *  Giải thích + phương án dùng chung 1 counter: docs/06-FLAVOR-BUILD-NUMBER.md
+ * ------------------------------------------------------------------ */
+def appPkg = new JsonSlurper().parseText(file("../../package.json").text)
+def appVersionName = appPkg.version as String
+def buildNumberOf = { String flavor ->
+    def n = appPkg.buildNumbers?.get(flavor)
+    if (n == null) {
+        throw new GradleException(
+            "package.json thiếu buildNumbers.${flavor}. Chạy `yarn version:sync` hoặc thêm tay.")
+    }
+    return n as Integer
+}
 
-/**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = io.github.react-native-community:jsc-android-intl:2026004.+`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US. Note that
- * this variant is about 6MiB larger per architecture than default.
- */
+/* ------------------------------------------------------------------ *
+ *  Ký release: đọc từ android/keystore.properties (KHÔNG commit file này).
+ *  Chưa có file -> release fallback về debug key + cảnh báo to đùng.
+ * ------------------------------------------------------------------ */
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+def hasReleaseKeystore = keystorePropsFile.exists()
+if (hasReleaseKeystore) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
+react {
+    autolinkLibrariesWithApp()
+    // Có flavor thì phải liệt kê đủ variant debug, nếu không RN sẽ cố bundle JS cho bản debug.
+    debuggableVariants = ["devDebug", "stagingDebug", "prodDebug"]
+}
+
+def enableProguardInReleaseBuilds = true
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
@@ -78,13 +61,88 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.mapper"
+
     defaultConfig {
         applicationId "com.mapper"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // versionCode được set riêng ở từng productFlavor bên dưới.
+        versionName appVersionName
+        resValue "string", "app_version", "${appVersionName}"
     }
+
+    buildFeatures {
+        buildConfig true
+        compose true      // Glance widget
+    }
+
+    /* -------------------------------------------------------------- *
+     *  FLAVOR: dev / staging / prod
+     *  Mỗi flavor = 1 app record riêng trên Play Console (chốt ở docs/05).
+     *  Mỗi flavor × 2 buildType (debug, release) = 6 variant.
+     *
+     *  KHÔNG đặt applicationIdSuffix cho buildType debug: applicationId phải
+     *  khớp đúng client trong google-services.json, thêm ".debug" là plugin
+     *  google-services báo "No matching client found".
+     * -------------------------------------------------------------- */
+    flavorDimensions += "env"
+    productFlavors {
+        dev {
+            dimension "env"
+            applicationIdSuffix ".dev"
+            versionCode buildNumberOf("dev")
+            resValue "string", "app_name", "Mapper Dev"
+            resValue "string", "build_number", "${buildNumberOf('dev')}"
+            buildConfigField "String", "FLAVOR_ENV", '"dev"'
+            buildConfigField "String", "API_BASE_URL", '"https://dev.hrapi.ttmedic.vn:443"'
+            buildConfigField "String", "FORGEROCK_URL", '"https://dev.hrapi.ttmedic.vn:443/am"'
+            buildConfigField "String", "FORGEROCK_REALM", '"alpha"'
+            buildConfigField "String", "SEPAY_ENV", '"sandbox"'
+            buildConfigField "int", "WIDGET_REFRESH_MINUTES", "1"
+            manifestPlaceholders = [
+                appScheme          : "mapperdev",
+                facebookAppId      : project.findProperty("FACEBOOK_APP_ID_DEV") ?: "0",
+                facebookClientToken: project.findProperty("FACEBOOK_CLIENT_TOKEN_DEV") ?: "",
+            ]
+        }
+        staging {
+            dimension "env"
+            applicationIdSuffix ".staging"
+            versionCode buildNumberOf("staging")
+            resValue "string", "app_name", "Mapper Staging"
+            resValue "string", "build_number", "${buildNumberOf('staging')}"
+            buildConfigField "String", "FLAVOR_ENV", '"staging"'
+            buildConfigField "String", "API_BASE_URL", '"https://staging.hrapi.ttmedic.vn:443"'
+            buildConfigField "String", "FORGEROCK_URL", '"https://staging.hrapi.ttmedic.vn:443/am"'
+            buildConfigField "String", "FORGEROCK_REALM", '"alpha"'
+            buildConfigField "String", "SEPAY_ENV", '"sandbox"'
+            buildConfigField "int", "WIDGET_REFRESH_MINUTES", "5"
+            manifestPlaceholders = [
+                appScheme          : "mapperstg",
+                facebookAppId      : project.findProperty("FACEBOOK_APP_ID_STAGING") ?: "0",
+                facebookClientToken: project.findProperty("FACEBOOK_CLIENT_TOKEN_STAGING") ?: "",
+            ]
+        }
+        prod {
+            dimension "env"
+            // không suffix -> com.mapper
+            versionCode buildNumberOf("prod")
+            resValue "string", "app_name", "Mapper"
+            resValue "string", "build_number", "${buildNumberOf('prod')}"
+            buildConfigField "String", "FLAVOR_ENV", '"prod"'
+            buildConfigField "String", "API_BASE_URL", '"https://hrapi.ttmedic.vn:443"'
+            buildConfigField "String", "FORGEROCK_URL", '"https://hrapi.ttmedic.vn:443/am"'
+            buildConfigField "String", "FORGEROCK_REALM", '"alpha"'
+            buildConfigField "String", "SEPAY_ENV", '"production"'
+            buildConfigField "int", "WIDGET_REFRESH_MINUTES", "5"
+            manifestPlaceholders = [
+                appScheme          : "mapper",
+                facebookAppId      : project.findProperty("FACEBOOK_APP_ID_PROD") ?: "0",
+                facebookClientToken: project.findProperty("FACEBOOK_CLIENT_TOKEN_PROD") ?: "",
+            ]
+        }
+    }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -92,24 +150,76 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        if (hasReleaseKeystore) {
+            release {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            versionNameSuffix "-debug"
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            } else {
+                // Cố tình KHÔNG im lặng: ký release bằng debug key là lỗi chặn phát hành.
+                logger.warn("\n[Mapper] ⚠️  Không tìm thấy android/keystore.properties — " +
+                        "release đang ký bằng DEBUG KEY. Không được upload bản này lên Play.\n")
+                signingConfig signingConfigs.debug
+            }
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+    // Tên file output đọc được ngay: Mapper-dev-1.0.0-46-release.apk
+    applicationVariants.configureEach { variant ->
+        def vc = buildNumberOf(variant.flavorName)
+        variant.outputs.configureEach { output ->
+            if (output.hasProperty("outputFileName") && output.outputFileName.endsWith(".apk")) {
+                output.outputFileName =
+                        "Mapper-${variant.flavorName}-${appVersionName}-${vc}-${variant.buildType.name}.apk"
+            }
+        }
+    }
+
+    packagingOptions {
+        resources {
+            excludes += ["META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*"]
         }
     }
 }
 
 dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+
+    // --- AndroidX nền ---
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // --- Splash screen (Android 12+ API, backport tới API 21) ---
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // --- Biometric mức 2 + mức 3 (ký số challenge) ---
+    implementation("androidx.biometric:biometric:1.1.0")
+
+    // --- ForgeRock IAM SDK ---
+    implementation("org.forgerock:forgerock-auth:4.8.1")
+
+    // --- Widget: Jetpack Glance (AppWidget viết bằng Compose) ---
+    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    implementation("androidx.glance:glance-appwidget:1.1.0")
+    implementation("androidx.glance:glance-material3:1.1.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

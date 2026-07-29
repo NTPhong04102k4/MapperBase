@@ -10,11 +10,23 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // ForgeRock SDK
+        maven { url "https://maven.forgerock.org/repo/releases" }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // Compose compiler plugin — bắt buộc từ Kotlin 2.0 trở đi, dùng cho Glance widget
+        classpath("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlinVersion")
+        // Firebase config theo flavor
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url "https://maven.forgerock.org/repo/releases" }
     }
 }
 

@@ -1,3 +1,15 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    // Alias phải khớp với babel.config.js (module-resolver) và
+    // jest.config.js (moduleNameMapper). Khai thiếu một chỗ là lệch.
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "App.tsx", "__tests__"],
+  "exclude": ["node_modules", "android", "ios"]
 }

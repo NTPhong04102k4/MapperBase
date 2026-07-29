@@ -76,6 +76,12 @@ yarn-error.log
 
 .env*
 
+# Secrets / config theo flavor — KHÔNG commit
+android/keystore.properties
+android/app/src/*/google-services.json
+ios/Firebase/*/GoogleService-Info.plist
+ios/Mapper/GoogleService-Info.plist
+
 .codebuddy
 .codex
 .continue

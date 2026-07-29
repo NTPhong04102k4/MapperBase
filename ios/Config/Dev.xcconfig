@@ -1,0 +1,26 @@
+#include "Base.xcconfig"
+// Pods xcconfig phải include SAU Base để không bị ghi đè cờ linker.
+// Tên file Pods sinh ra theo configuration: Pods-Mapper.debug dev.xcconfig
+// -> xem docs/07-IOS-FLAVOR-XCODE.md để biết cách đặt tên configuration cho khớp.
+
+FLAVOR_ENV = dev
+PRODUCT_BUNDLE_IDENTIFIER = com.mapper.dev
+DISPLAY_NAME = Mapper Dev
+
+// Build number tách riêng cho từng flavor (app record riêng trên ASC).
+// Giá trị đến từ Version.xcconfig do scripts/bump.js sinh ra.
+CURRENT_PROJECT_VERSION = $(BUILD_NUMBER_DEV)
+
+API_HOST = dev.hrapi.ttmedic.vn
+FORGEROCK_HOST = dev.hrapi.ttmedic.vn
+FORGEROCK_REALM = alpha
+SEPAY_ENV = sandbox
+WIDGET_REFRESH_MINUTES = 1
+
+APP_SCHEME = mapperdev
+APP_GROUP = group.com.mapper.dev
+WIDGET_BUNDLE_ID = com.mapper.dev.widget
+
+// GoogleService-Info.plist được chọn bằng Run Script "Select Firebase config"
+// từ ios/Firebase/dev/GoogleService-Info.plist
+FIREBASE_CONFIG_DIR = dev

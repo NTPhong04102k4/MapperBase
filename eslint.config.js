@@ -4,9 +4,39 @@ import reactNativePlugin from 'eslint-plugin-react-native';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
+/**
+ * Global của môi trường Node, dùng cho file cấu hình và script build.
+ * Khai tay thay vì kéo thêm gói `globals` — chỉ cần đúng chừng này.
+ */
+const nodeGlobals = {
+  module: 'writable',
+  require: 'readonly',
+  process: 'readonly',
+  console: 'readonly',
+  __dirname: 'readonly',
+  __filename: 'readonly',
+  exports: 'writable',
+};
+
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    // Không lint output build, thư mục native và node_modules.
+    ignores: ['node_modules/**', 'android/**', 'ios/**', 'coverage/**', '**/*.jsbundle'],
+  },
+  {
+    // File cấu hình + script chạy bằng Node, không phải code app.
+    files: ['*.config.js', 'jest.setup.js', '.eslintrc.js', '.prettierrc.js', 'scripts/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {...nodeGlobals, jest: 'readonly'},
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-console': 'off',
+    },
+  },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
@@ -14,9 +44,22 @@ export default [
       'react-native': reactNativePlugin,
       'react-hooks': reactHooksPlugin,
     },
+    settings: {
+      // Không khai thì eslint-plugin-react cảnh báo mỗi lần chạy.
+      react: {version: 'detect'},
+    },
     languageOptions: {
       parserOptions: {
         ecmaFeatures: {jsx: true},
+      },
+      globals: {
+        __DEV__: 'readonly',
+        console: 'readonly',
+        requestAnimationFrame: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
       },
     },
     // ---- NƠI THIẾT LẬP RULES ----
@@ -82,7 +125,6 @@ export default [
        */
       'react/no-unstable-nested-components': 'error',
 
-      'no-duplicate-imports': 'error', // Cấm import lặp dòng
       /**
        * Báo lỗi nếu truyền hai thuộc tính (props) trùng tên nhau vào cùng một thẻ component.
        * Ví dụ sai: <View style={s1} style={s2} />.

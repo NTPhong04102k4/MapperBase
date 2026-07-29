@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "buildNumbers": {
+    "dev": 1,
+    "staging": 1,
+    "prod": 1
+  },
+  "gitSha": "00b4b63"
+}

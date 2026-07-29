@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>vi</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mapper</string>
+	<string>$(DISPLAY_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,20 +22,108 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+
+	<!-- ══════════════════════════════════════════════════════════════════
+	     Cấu hình theo FLAVOR — giá trị đến từ ios/Config/*.xcconfig.
+	     AppEnvModule.swift đọc lại các key này rồi trả sang JS
+	     (src/config/env.ts), nên KHÔNG cần react-native-config.
+	     ══════════════════════════════════════════════════════════════════ -->
+	<key>FlavorEnv</key>
+	<string>$(FLAVOR_ENV)</string>
+	<key>ApiHost</key>
+	<string>$(API_HOST)</string>
+	<key>ForgeRockHost</key>
+	<string>$(FORGEROCK_HOST)</string>
+	<key>ForgeRockRealm</key>
+	<string>$(FORGEROCK_REALM)</string>
+	<key>SePayEnv</key>
+	<string>$(SEPAY_ENV)</string>
+	<key>WidgetRefreshMinutes</key>
+	<string>$(WIDGET_REFRESH_MINUTES)</string>
+	<key>AppGroupId</key>
+	<string>$(APP_GROUP)</string>
+	<key>AppScheme</key>
+	<string>$(APP_SCHEME)</string>
+
+	<!-- ══════════════════════════════════════════════════════════════════
+	     URL schemes: deep link theo flavor + ForgeRock redirect + Google + FB
+	     ══════════════════════════════════════════════════════════════════ -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>vn.ttmedic.mapper.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(APP_SCHEME)</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>vn.ttmedic.mapper.forgerock</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- ForgeRock OAuth2 redirect_uri = <bundleId>:/oauth2redirect -->
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>vn.ttmedic.mapper.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- REVERSED_CLIENT_ID lấy từ GoogleService-Info.plist của flavor.
+				     Mỗi flavor một giá trị -> điền khi thêm Firebase config. -->
+				<string>REPLACE_WITH_REVERSED_CLIENT_ID</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>vn.ttmedic.mapper.facebook</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fbREPLACE_WITH_FACEBOOK_APP_ID</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Facebook SDK -->
+	<key>FacebookAppID</key>
+	<string>REPLACE_WITH_FACEBOOK_APP_ID</string>
+	<key>FacebookClientToken</key>
+	<string>REPLACE_WITH_FACEBOOK_CLIENT_TOKEN</string>
+	<key>FacebookDisplayName</key>
+	<string>$(DISPLAY_NAME)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- ATS: chỉ https. hrapi.ttmedic.vn chạy TLS cổng 443 chuẩn nên không cần
+	     exception nào. Đừng bật NSAllowsArbitraryLoads. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+
+	<!-- Face ID: thiếu key này là app CRASH ngay lần đầu gọi LocalAuthentication -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Dùng Face ID để đăng nhập nhanh và xác nhận giao dịch của bạn.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Ứng dụng dùng vị trí để hiển thị thông tin phù hợp khu vực của bạn.</string>
+
+	<!-- Splash screen native: cùng storyboard cho cả 3 flavor -->
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
@@ -43,10 +131,20 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+
+	<!-- Background modes: nhận silent push để ghi snapshot cho widget -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+
+	<!-- Khỏi phải bấm tay "Export Compliance" mỗi lần upload TestFlight.
+	     Chỉ đúng khi app chỉ dùng HTTPS/crypto chuẩn của hệ điều hành. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>
 </plist>
