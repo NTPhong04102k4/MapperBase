@@ -14,6 +14,8 @@
 | 06 | [06-FLAVOR-BUILD-NUMBER.md](./06-FLAVOR-BUILD-NUMBER.md) | 3 flavor × 2 dạng build; build number **tách theo flavor** (đang dùng) + **code đầy đủ** cho phương án dùng chung một counter |
 | 07 | [07-IOS-FLAVOR-XCODE.md](./07-IOS-FLAVOR-XCODE.md) | 8 bước tay để dựng flavor iOS trong Xcode (configuration, scheme, xcconfig, Firebase, widget target) |
 | 08 | [08-BASE-HUONG-DAN.md](./08-BASE-HUONG-DAN.md) | **Đọc file này trước khi build lần đầu.** Bản đồ thư mục, lệnh hằng ngày, danh sách giá trị phải điền, quy ước viết code |
+| 09 | [09-KIEN-TRUC-JS-NATIVE.md](./09-KIEN-TRUC-JS-NATIVE.md) | Tầng framework: Hermes/bytecode/GC, JSI, TurboModule vs Nitro, Fabric + các luồng, worklets, Metro/autolinking/Codegen. Mục 12 là **phát hiện có thật**: interop layer không bật mặc định trên Android RN 0.79. Phụ lục A: bridge vs JSI thực thi từng bước |
+| 10 | [10-VIET-NATIVE-MODULE.md](./10-VIET-NATIVE-MODULE.md) | **Hướng dẫn viết code** ở tầng JS↔native: chọn TurboModule/Nitro, 8 bước viết TurboModule, quy ước gọi native, quy ước Kotlin/Swift, worklet, 2 checklist (thêm module · review PR) |
 
 > Tài liệu 01–05 là **phân tích trước khi code**. Tài liệu 06–08 mô tả **code đã dựng thật** trong repo.
 
