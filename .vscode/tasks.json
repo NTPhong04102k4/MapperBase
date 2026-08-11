@@ -1,0 +1,281 @@
+{
+  // ==========================================================================
+  //  Chạy: Ctrl+Shift+P > "Tasks: Run Task"
+  //        Ctrl+Shift+B                 -> Android: run dev  (build task mặc định)
+  //        Ctrl+Shift+P > Run Test Task -> Test
+  //
+  //  Quan hệ với Makefile: make/*.mk cũng chỉ wrap các script trong package.json.
+  //  File này gọi thẳng yarn thay vì `make` vì Makefile là macOS-only
+  //  (SHELL=/bin/bash, /usr/libexec/java_home, /Applications/Android Studio.app)
+  //  -> trên Windows guard-java fail ngay. Các target đụng Gradle được tách
+  //  "windows" override để chạy được cả hai hệ.
+  //
+  //  Không task nào set biến môi trường chọn env: config đến từ flavor
+  //  (BuildConfig/xcconfig -> MapperAppEnv -> src/shared/config/env.ts), nên
+  //  chọn variant lúc build là đủ. Một Metro phục vụ được cả 3 flavor.
+  // ==========================================================================
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "gradleFlavor",
+      "type": "pickString",
+      "description": "Flavor cần đóng gói",
+      "options": ["Dev", "Staging", "Prod"],
+      "default": "Dev"
+    },
+    {
+      "id": "env",
+      "type": "pickString",
+      "description": "Môi trường",
+      "options": ["dev", "staging", "prod"],
+      "default": "dev"
+    },
+    {
+      "id": "appId",
+      "type": "pickString",
+      "description": "App cần gỡ",
+      "options": ["com.mapper.dev", "com.mapper.staging", "com.mapper"],
+      "default": "com.mapper.dev"
+    }
+  ],
+  "tasks": [
+    // ─────────────────────────── Metro ───────────────────────────
+    {
+      "label": "Metro: start",
+      "type": "shell",
+      "command": "yarn start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Metro: start --reset-cache",
+      "detail": "Dùng khi đổi babel config / alias / asset",
+      "type": "shell",
+      "command": "yarn start --reset-cache",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Metro: adb reverse 8081",
+      "detail": "Cần khi chạy trên device Android thật",
+      "type": "shell",
+      "command": "adb reverse tcp:8081 tcp:8081",
+      "problemMatcher": []
+    },
+
+    // ────────────────────────── Android ──────────────────────────
+    {
+      "label": "Android: run dev",
+      "type": "shell",
+      "command": "yarn android:dev",
+      "group": {"kind": "build", "isDefault": true},
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Android: run staging",
+      "type": "shell",
+      "command": "yarn android:staging",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Android: run prod",
+      "type": "shell",
+      "command": "yarn android:prod",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Android: APK release…",
+      "detail": "-> android/app/build/outputs/apk/<env>/release/",
+      "type": "shell",
+      "command": "./gradlew assemble${input:gradleFlavor}Release",
+      "windows": {
+        "command": ".\\gradlew.bat assemble${input:gradleFlavor}Release"
+      },
+      "options": {"cwd": "${workspaceFolder}/android"},
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Android: AAB release…",
+      "detail": "Bản upload Play Console -> android/app/build/outputs/bundle/",
+      "type": "shell",
+      "command": "./gradlew bundle${input:gradleFlavor}Release",
+      "windows": {
+        "command": ".\\gradlew.bat bundle${input:gradleFlavor}Release"
+      },
+      "options": {"cwd": "${workspaceFolder}/android"},
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "Android: logcat (RN/Mapper)",
+      "type": "shell",
+      "command": "adb logcat -v color ReactNative:V ReactNativeJS:V Mapper:V '*:S'",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated"}
+    },
+    {
+      "label": "Android: uninstall…",
+      "type": "shell",
+      "command": "adb uninstall ${input:appId}",
+      "problemMatcher": []
+    },
+    {
+      "label": "Android: devices",
+      "type": "shell",
+      "command": "adb devices -l",
+      "problemMatcher": []
+    },
+    {
+      "label": "Android: gradle clean",
+      "type": "shell",
+      "command": "./gradlew clean",
+      "windows": {"command": ".\\gradlew.bat clean"},
+      "options": {"cwd": "${workspaceFolder}/android"},
+      "problemMatcher": []
+    },
+
+    // ──────────────────── iOS (chỉ chạy trên macOS) ───────────────
+    {
+      "label": "iOS: run dev",
+      "type": "shell",
+      "command": "yarn ios:dev",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "iOS: run staging",
+      "type": "shell",
+      "command": "yarn ios:staging",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "iOS: run prod",
+      "type": "shell",
+      "command": "yarn ios:prod",
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "group": "rn"}
+    },
+    {
+      "label": "iOS: pods",
+      "type": "shell",
+      "command": "yarn pods",
+      "problemMatcher": []
+    },
+
+    // ────────────────────── Chất lượng code ──────────────────────
+    {
+      "label": "Lint",
+      "type": "shell",
+      "command": "yarn lint",
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "Lint: fix",
+      "type": "shell",
+      "command": "npx eslint . --fix",
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "Typecheck",
+      "type": "shell",
+      "command": "yarn tsc",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Typecheck: watch",
+      "type": "shell",
+      "command": "npx tsc --noEmit --watch",
+      "isBackground": true,
+      "problemMatcher": ["$tsc-watch"],
+      "presentation": {"panel": "dedicated"}
+    },
+    {
+      "label": "Test",
+      "type": "shell",
+      "command": "yarn test",
+      "group": {"kind": "test", "isDefault": true},
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: watch",
+      "type": "shell",
+      "command": "npx jest --watch",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated"}
+    },
+    {
+      "label": "Test: coverage",
+      "type": "shell",
+      "command": "npx jest --coverage",
+      "problemMatcher": []
+    },
+    {
+      "label": "Verify (lint + tsc + test)",
+      "detail": "Cổng kiểm tra trước khi commit/PR — tương đương `make verify`",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Lint", "Typecheck", "Test"],
+      "problemMatcher": []
+    },
+
+    // ─────────────────── Version / build number ───────────────────
+    {
+      "label": "Version: print",
+      "type": "shell",
+      "command": "yarn version:print",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: sync xuống android/ios",
+      "type": "shell",
+      "command": "yarn version:sync",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: bump build number…",
+      "detail": "+1 buildNumbers.<env> trong package.json",
+      "type": "shell",
+      "command": "node scripts/bump.js build ${input:env}",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: bump cả 3 flavor",
+      "type": "shell",
+      "command": "yarn bump:all",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: release patch",
+      "type": "shell",
+      "command": "yarn release:patch",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: release minor",
+      "type": "shell",
+      "command": "yarn release:minor",
+      "problemMatcher": []
+    },
+    {
+      "label": "Version: release major",
+      "type": "shell",
+      "command": "yarn release:major",
+      "problemMatcher": []
+    },
+
+    // ────────────────────────── Chẩn đoán ─────────────────────────
+    {
+      "label": "Doctor (react-native doctor)",
+      "type": "shell",
+      "command": "npx react-native doctor",
+      "problemMatcher": []
+    }
+  ]
+}
