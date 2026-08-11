@@ -1,0 +1,27 @@
+{
+  "project": "Mapper",
+  "updatedAt": "2026-08-11T11:10:51Z",
+  "skills": {
+    "commit": {
+      "stack": "rn",
+      "count": 1,
+      "firstEmitted": "2026-08-11T11:10:51Z",
+      "lastEmitted": "2026-08-11T11:10:51Z",
+      "lastCommit": "991094b3f1963ac0e98a84a17088a1299b674dc2"
+    },
+    "explain-lib": {
+      "stack": "rn",
+      "count": 1,
+      "firstEmitted": "2026-08-11T11:02:44Z",
+      "lastEmitted": "2026-08-11T11:02:44Z",
+      "lastCommit": "991094b3f1963ac0e98a84a17088a1299b674dc2"
+    },
+    "learn-project": {
+      "stack": "rn",
+      "count": 1,
+      "firstEmitted": "2026-08-08T06:44:18Z",
+      "lastEmitted": "2026-08-08T06:44:18Z",
+      "lastCommit": "991094b3f1963ac0e98a84a17088a1299b674dc2"
+    }
+  }
+}
