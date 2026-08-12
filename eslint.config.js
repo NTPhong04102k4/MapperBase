@@ -23,7 +23,16 @@ export default [
   ...tseslint.configs.recommended,
   {
     // Không lint output build, thư mục native và node_modules.
-    ignores: ['node_modules/**', 'android/**', 'ios/**', 'coverage/**', '**/*.jsbundle'],
+    // `.gitnexus/` là file do tool sinh (CommonJS): flat config KHÔNG tự đọc .gitignore,
+    // nên phải liệt kê ở đây, nếu không `yarn lint` đỏ vì code không phải của app.
+    ignores: [
+      'node_modules/**',
+      'android/**',
+      'ios/**',
+      'coverage/**',
+      '**/*.jsbundle',
+      '.gitnexus/**',
+    ],
   },
   {
     // File cấu hình + script chạy bằng Node, không phải code app.

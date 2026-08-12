@@ -1,0 +1,35 @@
+# Line-ending: nguồn sự thật duy nhất của repo, THẮNG cấu hình `core.autocrlf` của từng máy.
+# Có file này thì máy Windows (autocrlf=true) và macOS/CI không còn sinh diff whitespace rỗng.
+# Phải khớp với .editorconfig (end_of_line = lf) và .prettierrc.js (endOfLine: 'lf').
+* text=auto eol=lf
+
+# Script chạy bằng cmd.exe/PowerShell phải giữ CRLF — đổi sang LF là chạy sai.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary: đừng để `text=auto` đoán. Đoán sai một lần là file hỏng, không sửa lại được.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.zip binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.p12 binary
+*.mobileprovision binary
+*.aab binary
+*.apk binary
+*.hprof binary
+
+# Lockfile: LF, và đánh dấu generated để diff gọn khi review.
+yarn.lock text eol=lf linguist-generated=true
