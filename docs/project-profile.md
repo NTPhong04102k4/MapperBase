@@ -7,9 +7,34 @@ hướng trước khi implement, thay vì quét lại toàn bộ `src/`.
 > xác nhận nó còn tồn tại (một lệnh `Read`/`Grep` là đủ). Chỉ dựng lại file này khi người dùng yêu
 > cầu rõ ràng (`learn-project` lần nữa) — không tự làm mới.
 >
-> Tài liệu bổ sung: `CLAUDE.md` (lệnh + bẫy), `docs/00-TONG-QUAN.md` (index docs 01–10),
+> Tài liệu bổ sung: `CLAUDE.md` (lệnh + bẫy), `docs/00-TONG-QUAN.md` (index docs 01–12),
 > `docs/08-BASE-HUONG-DAN.md` (quy ước viết code), `docs/09` (tầng JS↔native),
-> `docs/10` (hướng dẫn viết native module).
+> `docs/10` (hướng dẫn viết native module), `docs/11` (GitNexus), `docs/12` (Superpowers + quy ước
+> commit ở §11).
+
+### Trạng thái xác minh
+
+Làm mới ngày **2026-08-11** tại commit `da1573d` (bản đầu viết tại `9f129ff`).
+
+Giữa hai lần, **`src/` không đổi một dòng nào** — chỉ tooling thay đổi (`.eslintrc.js` bị xoá,
+`.prettierrc.js` rút gọn, thêm `.vscode/tasks.json`, `buildInfo.json` đồng bộ `gitSha`). Nên §2–§6 là
+kế thừa nguyên trạng, đã đối chiếu lại: 14 path trong catalog §5 còn tồn tại, `rootReducer` vẫn đúng
+5 slice và vẫn import thẳng file, các version ở §1 khớp `package.json`.
+
+Cổng `yarn lint && yarn tsc && yarn test` chạy thật hôm nay:
+
+| Cổng | Kết quả |
+|---|---|
+| `yarn lint` | ✅ 0 error / 30 warning |
+| `yarn tsc` | ✅ sạch |
+| `yarn test` | ✅ 4 suite / 24 test |
+
+30 warning còn lại là **cố ý để mức warning**, không phải nợ: phần lớn là `no-nested-ternary` và vài
+`no-console` trong `shared/services/http/client.ts`. Chúng không làm đỏ cổng.
+
+Trong cùng phiên làm mới này đã sửa ba lỗi hạ tầng (chi tiết + lý do ở §7, §9): `eslint.config.js` bỏ
+qua `.gitnexus/**`, `.gitignore` sửa dòng `.superpowers/`, và thêm `.gitattributes` để chốt
+line-ending.
 
 ---
 
@@ -350,7 +375,28 @@ Toàn bộ đã có trong `docs/08-BASE-HUONG-DAN.md` và `docs/10` §3–5. B�
   `docs/09` §12. **Chưa kiểm chứng trên device.**
 - `react-native-worklets/plugin` **phải nằm cuối** `babel.config.js` — sai chỗ = worklet im lặng chạy
   trên JS thread, animation giật mà không có lỗi. Đổi babel/alias → `yarn start --reset-cache`.
-- Hai config ESLint: `eslint.config.js` (flat, **đang có hiệu lực**) và `.eslintrc.js` (legacy, chết).
+- **ESLint flat config KHÔNG tự đọc `.gitignore`** — bẫy này đã làm đỏ cổng lint một lần (18 error ở
+  `.gitnexus/run.cjs` do GitNexus sinh: `'require' is not defined`, `'process' is not defined`,
+  `no-require-imports`) dù `.gitnexus` đã nằm trong `.gitignore`. **Đã sửa**: thêm `.gitnexus/**` vào
+  khối `ignores` của `eslint.config.js`.
+
+  Bất kỳ tool nào sinh file `.js`/`.cjs` vào repo sau này sẽ tái hiện đúng bẫy này — nhớ là
+  gitignore và eslint-ignore là **hai danh sách riêng**, phải khai cả hai.
+- Chỉ còn **một** config ESLint: `eslint.config.js` (flat, 188 dòng). `.eslintrc.js` đã bị xoá ở
+  `da1573d` — ESLint 8.57.1 vẫn đọc flat config nên không cần nó. Nhưng danh sách `files` ở
+  `eslint.config.js:30` còn kể tên `.eslintrc.js` (mục chết, vô hại, có thể dọn cùng lúc).
+- **Line-ending: đã chốt bằng `.gitattributes`.** Trước đó máy này có `core.autocrlf = true` mà repo
+  không có `.gitattributes`, trong khi `.editorconfig` và `.prettierrc.js` đều khai LF — ba nguồn đánh
+  nhau, sinh diff whitespace rỗng (`.editorconfig`, `tsconfig.base.json`, `ios/Config/Version.xcconfig`
+  từng hiện `M` mà `git diff` hoàn toàn rỗng). Nay `.gitattributes` khai `* text=auto eol=lf` và
+  **thắng `core.autocrlf` của mọi máy**, nên nguồn sự thật chỉ còn một.
+
+  Hai điều phải biết về file này: `*.bat`/`*.cmd`/`*.ps1` được **cố ý giữ CRLF** (`android/gradlew.bat`
+  đổi sang LF là `cmd.exe` chạy sai), và danh sách `binary` là để `text=auto` không đoán — đoán sai
+  một lần là ảnh/keystore hỏng không cứu được. Thêm loại file binary mới thì bổ sung vào đó.
+
+  Nếu sau này vẫn thấy file hiện `M` mà `git diff` rỗng: đó là working tree còn CRLF cũ. Xác nhận
+  `git diff` **rỗng thật** rồi `git checkout -- <file>` để lấy lại bản LF.
 - `tsconfig.base.json` strict hơn (`noUncheckedIndexedAccess`, `noUnusedLocals`…) nhưng **chưa được**
   `tsconfig.json` extends — chỉ `strict: true` đang chạy.
 - `jest.config.js` liệt kê tay package cần Babel transform trong `transformIgnorePatterns`; lib RN
@@ -365,8 +411,37 @@ Toàn bộ đã có trong `docs/08-BASE-HUONG-DAN.md` và `docs/10` §3–5. B�
 
 ## 8. Kiểm thử
 
-4 test file: `architecture.test.ts` (canh luật import), `format.test.ts`, `httpErrors.test.ts`,
-`permissions.test.ts`. `jest.setup.js` mock toàn bộ native module.
+4 test file / **24 test**, tất cả xanh: `architecture.test.ts` (canh luật import),
+`format.test.ts`, `httpErrors.test.ts`, `permissions.test.ts`. `jest.setup.js` mock toàn bộ native
+module — thêm native module mới mà quên mock ở đây thì mọi test import tới đó chết ngay dòng import.
 
 Đề xuất **chưa apply** (nằm ở `docs/10` §3): thêm vào `architecture.test.ts` một case chặn
 `NativeModules`/`TurboModuleRegistry` bị import ngoài `shared/native/`.
+
+Độ phủ hiện tại là **theo luật, không theo màn hình**: test canh kiến trúc và pure function; chưa có
+test nào chạm saga, HTTP interceptor hay component. Khi thêm test cho saga, `redux-saga` test bằng
+cách so `yield` effect (không cần mock network) — đó là lý do mọi side-effect bắt buộc đi qua saga.
+
+---
+
+## 9. Tầng tooling (không phải app, nhưng quyết định cách làm việc)
+
+| Tool | Nơi | Việc | Trạng thái |
+|---|---|---|---|
+| `sr` (skillrunner) | binary `~/go/bin/`, pool `D:\user\toolClientApps\my-plugin-ecosystem` | Phát marching orders theo stack `rn`; ledger ở `.skillrunner/ledger.json` | ✅ chạy; pointer ở `~/.skillrunner/home` |
+| GitNexus | `.gitnexus/` (gitignored) | Knowledge graph của repo, MCP + CLI | ✅ đã index; hướng dẫn `docs/11` |
+| Superpowers | plugin Claude Code | Quy trình brainstorm → plan → TDD → review | ✅ đã cài; hướng dẫn `docs/12` |
+
+Ba điều cần biết khi ba tool này chạm vào repo:
+
+- **`sr` là quy trình bắt buộc** (`CLAUDE.md`): `sr status` → `sr list` → `sr emit <skill>`, và
+  `sr` **không tự commit** — luôn trình diff để người dùng quyết. Quy ước commit đã chốt cho repo này
+  nằm ở `docs/12` §11.
+- **GitNexus `impact` báo thiếu ở repo này.** Chỉ cú pháp gọi trực tiếp `fn()` sinh cạnh `CALLS`;
+  `yield call(fn)` truyền hàm như **đối số** nên không sinh cạnh. Ví dụ đo được: `impact performLogout`
+  trả `impactedCount: 0 / risk LOW` trong khi hàm này thật sự được gọi ở `authSaga.ts:228` và `:238`.
+  Vì codebase này đưa mọi side-effect qua `yield call`, **`impact` là sàn chứ không phải trần** —
+  luôn `Grep` xác nhận thêm. Chi tiết `docs/11` §12.
+- **`.gitignore`: git coi khoảng trắng đầu dòng là ký tự thật.** Dòng `" .superpowers/"` (thừa một dấu
+  cách) **không khớp** `.superpowers/` — đã sửa. Kiểm một pattern có thật sự ăn hay không bằng
+  `git check-ignore -v <path>`: nó in ra file:dòng của rule đã khớp, im lặng nghĩa là **không** khớp.
