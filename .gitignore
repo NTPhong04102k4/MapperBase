@@ -99,3 +99,4 @@ design-system
 .claude
 .gitnexus
 .superpowers/
+.env/*
