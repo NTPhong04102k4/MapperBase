@@ -53,8 +53,9 @@ export const sepayApi = {
  * dùng URL backend trả về: nội dung chuyển khoản do backend sinh mới là cái
  * webhook đối soát được, client tự ghép là sai lệch ngay.
  */
-export function buildSePayQrUrl(order: Pick<SePayOrder,
-  'accountNumber' | 'bankCode' | 'amount' | 'transferContent'>): string {
+export function buildSePayQrUrl(
+  order: Pick<SePayOrder, 'accountNumber' | 'bankCode' | 'amount' | 'transferContent'>,
+): string {
   const params = new URLSearchParams({
     acc: order.accountNumber,
     bank: order.bankCode,

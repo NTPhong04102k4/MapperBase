@@ -17,7 +17,4 @@ export const selectPendingDeepLink = (state: RootState) => state.ui.pendingDeepL
 export const selectOpenModals = (state: RootState) => state.ui.modals;
 
 /** Modal có đang mở không — dùng để chặn back hoặc chặn hiện toast chồng lên. */
-export const selectHasOpenModal = createSelector(
-  [selectOpenModals],
-  modals => modals.length > 0,
-);
+export const selectHasOpenModal = createSelector([selectOpenModals], modals => modals.length > 0);

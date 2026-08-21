@@ -55,7 +55,12 @@ const uiSlice = createSlice({
         // Giữ tối đa 3: nhiều hơn là che hết màn hình và không ai đọc kịp.
         state.toasts = [...state.toasts.slice(-2), action.payload];
       },
-      prepare: (input: {kind: ToastKind; message: string; i18nKey?: string; durationMs?: number}) => ({
+      prepare: (input: {
+        kind: ToastKind;
+        message: string;
+        i18nKey?: string;
+        durationMs?: number;
+      }) => ({
         payload: {
           id: `toast-${++toastSeq}`,
           kind: input.kind,

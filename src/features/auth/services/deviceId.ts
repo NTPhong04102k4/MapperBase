@@ -28,7 +28,9 @@ function uuidV4(): string {
 
 export function getDeviceId(): string {
   const existing = appStorage.getString(KEY);
-  if (existing) {return existing;}
+  if (existing) {
+    return existing;
+  }
 
   const generated = `${Platform.OS}-${uuidV4()}`;
   appStorage.set(KEY, generated);

@@ -23,7 +23,9 @@ function* syncSnapshotSaga(action: ReturnType<typeof widgetActions.syncRequested
     yield put(widgetActions.installStatusChecked(info));
 
     // Không có widget nào trên màn hình chính thì ghi cũng vô ích.
-    if (!info.installed) {return;}
+    if (!info.installed) {
+      return;
+    }
 
     yield call([WidgetBridge, WidgetBridge.writeSnapshot], action.payload);
     yield put(widgetActions.syncSucceeded(action.payload));

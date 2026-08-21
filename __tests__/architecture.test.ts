@@ -56,9 +56,7 @@ describe('biên module trong src/', () => {
     const viol = files
       .filter(f => f.rel.startsWith('shared/'))
       .flatMap(f =>
-        f.imports
-          .filter(i => banned.includes(i.split('/')[0]))
-          .map(i => `${f.rel} → @/${i}`),
+        f.imports.filter(i => banned.includes(i.split('/')[0])).map(i => `${f.rel} → @/${i}`),
       );
     expect(viol).toEqual([]);
   });
@@ -66,9 +64,7 @@ describe('biên module trong src/', () => {
   it('features/ không import app/', () => {
     const viol = files
       .filter(f => f.rel.startsWith('features/'))
-      .flatMap(f =>
-        f.imports.filter(i => i.startsWith('app/')).map(i => `${f.rel} → @/${i}`),
-      );
+      .flatMap(f => f.imports.filter(i => i.startsWith('app/')).map(i => `${f.rel} → @/${i}`));
     expect(viol).toEqual([]);
   });
 

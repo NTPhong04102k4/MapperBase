@@ -44,8 +44,8 @@ export function DiscoverScreen() {
       <HeaderModal visible={filter.visible} onClose={filter.close} showHandle>
         <Text style={[theme.typography.h3, {color: theme.colors.text}]}>Bộ lọc</Text>
         <Text style={[theme.typography.body, {color: theme.colors.textMuted, marginTop: 8}]}>
-          Vuốt lên để đóng. Nội dung phải ngắn — panel này che đúng phần trên
-          cùng, nơi người dùng đang nhìn.
+          Vuốt lên để đóng. Nội dung phải ngắn — panel này che đúng phần trên cùng, nơi người dùng
+          đang nhìn.
         </Text>
         <View style={styles.gap} />
         <Button title={t('common.confirm')} onPress={filter.close} />

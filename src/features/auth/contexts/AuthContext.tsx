@@ -2,11 +2,7 @@ import React, {createContext, useCallback, useContext, useEffect, useMemo} from 
 import {useAppDispatch, useAppSelector} from '@/store/hooks';
 import {authActions} from '../store/authSlice';
 import {authSideEffects} from '../store/authSaga';
-import {
-  selectAuthStatus,
-  selectCurrentUser,
-  selectLoginPending,
-} from '../store/selectors';
+import {selectAuthStatus, selectCurrentUser, selectLoginPending} from '../store/selectors';
 import type {AuthStatus, AuthUser, SocialProvider} from '../services';
 
 type AuthContextValue = {

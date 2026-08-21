@@ -50,15 +50,16 @@ import type {RootState} from '@/store/rootReducer';
  *     sau — KHÔNG kết luận là thất bại.
  */
 
-const selectCurrentOrderId = (state: RootState): string | undefined =>
-  state.payment.order?.orderId;
+const selectCurrentOrderId = (state: RootState): string | undefined => state.payment.order?.orderId;
 
 function idempotencyKey(orderRef: string): string {
   // Cùng orderRef + cùng thiết bị = cùng key ⇒ bấm hai lần chỉ tạo một đơn.
   return `${getDeviceId()}:${orderRef}`;
 }
 
-function* createOrderSaga(action: ReturnType<typeof paymentActions.createOrderRequested>): SagaIterator {
+function* createOrderSaga(
+  action: ReturnType<typeof paymentActions.createOrderRequested>,
+): SagaIterator {
   try {
     const order: SePayOrder = yield call(sepayApi.createOrder, {
       ...action.payload,
@@ -131,7 +132,9 @@ function* watchPolling(): SagaIterator {
     yield take(paymentActions.pollingStarted.type);
 
     const orderId: string | undefined = yield select(selectCurrentOrderId);
-    if (!orderId) {continue;}
+    if (!orderId) {
+      continue;
+    }
 
     const task: Task = yield fork(pollLoop, orderId);
 
@@ -151,7 +154,9 @@ function* watchPolling(): SagaIterator {
 
 function* cancelOrderSaga(): SagaIterator {
   const orderId: string | undefined = yield select(selectCurrentOrderId);
-  if (!orderId) {return;}
+  if (!orderId) {
+    return;
+  }
   try {
     const order: SePayOrder = yield call(sepayApi.cancelOrder, orderId);
     yield put(paymentActions.createOrderSucceeded(order));
@@ -200,9 +205,7 @@ function* confirmWithBiometricSaga(
     // Khoá bị huỷ vì user đổi danh sách sinh trắc học. Đây KHÔNG phải "lỗi hệ
     // thống" — phải đưa người dùng đi enroll lại, kèm xác thực bằng OTP/mật khẩu.
     if (code === 'E_KEY_INVALIDATED') {
-      yield put(
-        paymentActions.confirmFailed({message: '', i18nKey: 'biometric.keyInvalidated'}),
-      );
+      yield put(paymentActions.confirmFailed({message: '', i18nKey: 'biometric.keyInvalidated'}));
       return;
     }
 

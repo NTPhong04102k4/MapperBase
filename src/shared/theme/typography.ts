@@ -2,7 +2,11 @@ import {Platform} from 'react-native';
 
 // Inter is the recommended font (design-system/mapperbase/MASTER.md).
 // Falls back to system font until Inter is bundled via react-native.config.js + assets/fonts.
-export const fontFamily = Platform.select({ios: 'System', android: 'sans-serif', default: 'System'});
+export const fontFamily = Platform.select({
+  ios: 'System',
+  android: 'sans-serif',
+  default: 'System',
+});
 
 export const typography = {
   h1: {fontFamily, fontSize: 32, fontWeight: '700' as const, lineHeight: 40},

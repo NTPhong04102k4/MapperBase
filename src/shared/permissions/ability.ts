@@ -36,7 +36,9 @@ export function createEmptyAbility(): AppAbility {
 export function createAbilityFromRules(rules: PermissionRule[]): AppAbility {
   return createMongoAbility<AppAbility>(rules, {
     detectSubjectType: item => {
-      if (typeof item === 'string') {return item as Subject;}
+      if (typeof item === 'string') {
+        return item as Subject;
+      }
       const type = (item as {__type?: string})?.__type;
       return (type ?? 'all') as Subject;
     },

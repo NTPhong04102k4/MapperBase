@@ -46,9 +46,12 @@ export function CheckoutScreen() {
 
   // Rời màn hình = dừng poll. Không dọn thì vòng lặp chạy nền và tiếp tục
   // dispatch vào một đơn mà người dùng đã bỏ.
-  useEffect(() => () => {
-    dispatch(paymentActions.cancelOrderRequested());
-  }, [dispatch]);
+  useEffect(
+    () => () => {
+      dispatch(paymentActions.cancelOrderRequested());
+    },
+    [dispatch],
+  );
 
   const createOrder = () => {
     dispatch(

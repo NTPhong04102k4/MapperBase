@@ -82,8 +82,8 @@ export function SettingsScreen() {
       <View style={styles.gap} />
 
       <Text style={[theme.typography.caption, {color: theme.colors.textMuted}]}>
-        Lựa chọn được lưu trong MMKV kho `app` — không bị xoá khi đăng xuất, nên
-        lần đăng nhập sau vẫn giữ nguyên giao diện và ngôn ngữ.
+        Lựa chọn được lưu trong MMKV kho `app` — không bị xoá khi đăng xuất, nên lần đăng nhập sau
+        vẫn giữ nguyên giao diện và ngôn ngữ.
       </Text>
     </Screen>
   );

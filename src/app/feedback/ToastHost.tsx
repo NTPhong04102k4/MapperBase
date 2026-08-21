@@ -21,7 +21,9 @@ export function ToastHost() {
   const toasts = useAppSelector(selectToasts);
   const insets = useSafeAreaInsets();
 
-  if (toasts.length === 0) {return null;}
+  if (toasts.length === 0) {
+    return null;
+  }
 
   return (
     <View pointerEvents="box-none" style={[styles.host, {top: insets.top + 8}]}>

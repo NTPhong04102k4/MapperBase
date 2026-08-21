@@ -41,10 +41,7 @@ const permissionSlice = createSlice({
       state.stale = true;
     },
 
-    syncSucceeded: (
-      state,
-      action: PayloadAction<{rules: PermissionRule[]; version?: string}>,
-    ) => {
+    syncSucceeded: (state, action: PayloadAction<{rules: PermissionRule[]; version?: string}>) => {
       state.rules = action.payload.rules;
       state.version = action.payload.version ?? null;
       state.loading = false;

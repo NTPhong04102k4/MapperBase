@@ -1,11 +1,4 @@
-import {
-  assertCan,
-  can,
-  resetAbility,
-  setAbilityRules,
-  sift,
-  siftOne,
-} from '@/shared/permissions';
+import {assertCan, can, resetAbility, setAbilityRules, sift, siftOne} from '@/shared/permissions';
 import {ApiError} from '@/shared/services/http/errors';
 
 type Order = {__type: 'Order'; id: string; ownerId: string};

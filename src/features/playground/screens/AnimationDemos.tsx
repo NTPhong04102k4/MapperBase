@@ -77,10 +77,7 @@ function SequenceDemo() {
   const play = () => {
     // withSequence chạy tuần tự; withRepeat(-1) là lặp vô hạn;
     // tham số `true` = chạy ngược lại sau mỗi lần (yoyo).
-    scale.value = withSequence(
-      withTiming(1.3, {duration: 180}),
-      withSpring(1, {damping: 8}),
-    );
+    scale.value = withSequence(withTiming(1.3, {duration: 180}), withSpring(1, {damping: 8}));
     rotate.value = withDelay(
       120,
       withSequence(

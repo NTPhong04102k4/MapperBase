@@ -74,7 +74,9 @@ const paymentSlice = createSlice({
       state.status = action.payload.status;
       state.bankTransactionId = action.payload.bankTransactionId;
       state.receivedAmount = action.payload.receivedAmount;
-      if (state.order) {state.order.status = action.payload.status;}
+      if (state.order) {
+        state.order.status = action.payload.status;
+      }
     },
 
     pollingStopped: state => {
@@ -84,7 +86,9 @@ const paymentSlice = createSlice({
     /** Hết thời gian chờ mà tiền chưa về. Đơn có thể vẫn được trả sau. */
     pollingTimedOut: state => {
       state.polling = false;
-      if (state.status === 'pending') {state.status = 'expired';}
+      if (state.status === 'pending') {
+        state.status = 'expired';
+      }
     },
 
     cancelOrderRequested: state => {

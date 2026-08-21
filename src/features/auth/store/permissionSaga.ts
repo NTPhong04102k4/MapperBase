@@ -21,15 +21,11 @@ function* syncPermissionsSaga(): SagaIterator {
     yield call(setAbilityRules, payload.rules);
     sessionStorage.set(StorageKey.permissionRules, JSON.stringify(payload.rules));
 
-    yield put(
-      permissionActions.syncSucceeded({rules: payload.rules, version: payload.version}),
-    );
+    yield put(permissionActions.syncSucceeded({rules: payload.rules, version: payload.version}));
   } catch (error) {
     // Giữ nguyên rule cũ. Mất mạng không đồng nghĩa với mất quyền — xoá sạch
     // quyền lúc này sẽ làm cả app trông như hỏng.
-    yield put(
-      permissionActions.syncFailed(error instanceof Error ? error.message : String(error)),
-    );
+    yield put(permissionActions.syncFailed(error instanceof Error ? error.message : String(error)));
   }
 }
 

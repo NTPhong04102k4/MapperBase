@@ -38,7 +38,9 @@ export function clearSession(): void {
 
 export function readJSON<T>(storage: MMKV, key: string): T | null {
   const raw = storage.getString(key);
-  if (!raw) {return null;}
+  if (!raw) {
+    return null;
+  }
   try {
     return JSON.parse(raw) as T;
   } catch {

@@ -28,14 +28,17 @@ function ConfirmSignOutModal({close}: GlobalModalProps) {
 
   return (
     <View style={styles.gap}>
-      <Text style={[theme.typography.h3, {color: theme.colors.text}]}>
-        {t('auth.signOut')}
-      </Text>
+      <Text style={[theme.typography.h3, {color: theme.colors.text}]}>{t('auth.signOut')}</Text>
       <Text style={[theme.typography.body, {color: theme.colors.textMuted}]}>
         {t('auth.signOutConfirm')}
       </Text>
       <View style={styles.row}>
-        <Button title={t('common.cancel')} variant="secondary" onPress={close} style={styles.flex} />
+        <Button
+          title={t('common.cancel')}
+          variant="secondary"
+          onPress={close}
+          style={styles.flex}
+        />
         <Button
           title={t('auth.signOut')}
           onPress={() => {

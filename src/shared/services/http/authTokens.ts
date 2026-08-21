@@ -58,7 +58,9 @@ let inFlightRefresh: Promise<string | null> | null = null;
  * nó chỉ xảy ra khi nhiều request trùng thời điểm.
  */
 export function refreshAccessToken(): Promise<string | null> {
-  if (inFlightRefresh) {return inFlightRefresh;}
+  if (inFlightRefresh) {
+    return inFlightRefresh;
+  }
 
   inFlightRefresh = provider
     .refresh()

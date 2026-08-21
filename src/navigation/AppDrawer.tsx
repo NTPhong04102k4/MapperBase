@@ -46,7 +46,9 @@ function DrawerContent(props: DrawerContentComponentProps) {
           <Text style={[theme.typography.h3, {color: theme.colors.text}]} numberOfLines={1}>
             {user?.displayName ?? '—'}
           </Text>
-          <Text style={[theme.typography.caption, {color: theme.colors.textMuted}]} numberOfLines={1}>
+          <Text
+            style={[theme.typography.caption, {color: theme.colors.textMuted}]}
+            numberOfLines={1}>
             {user?.email ?? user?.username ?? ''}
           </Text>
         </View>

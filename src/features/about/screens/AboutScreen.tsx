@@ -41,8 +41,8 @@ export function AboutScreen() {
       <View style={styles.gap} />
 
       <Text style={[theme.typography.caption, {color: theme.colors.textMuted}]}>
-        Mọi giá trị trên đến từ BuildConfig (Android) / Info.plist (iOS) theo
-        flavor đang build — không có file .env nào trong dự án này.
+        Mọi giá trị trên đến từ BuildConfig (Android) / Info.plist (iOS) theo flavor đang build —
+        không có file .env nào trong dự án này.
       </Text>
     </Screen>
   );

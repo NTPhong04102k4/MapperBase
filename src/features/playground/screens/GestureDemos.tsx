@@ -173,7 +173,9 @@ function SwipeToDeleteRow({label, onDelete}: {label: string; onDelete: () => voi
         x.value = withTiming(-400, {duration: 180});
         opacity.value = withTiming(0, {duration: 180});
         height.value = withTiming(0, {duration: 200}, finished => {
-          if (finished) {runOnJS(onDelete)();}
+          if (finished) {
+            runOnJS(onDelete)();
+          }
         });
       } else {
         x.value = withSpring(0);
@@ -248,7 +250,9 @@ function SnapDemo() {
       const projected = x.value + event.velocityX * 0.15;
       let nearest = SNAP[0];
       for (const point of SNAP) {
-        if (Math.abs(point - projected) < Math.abs(nearest - projected)) {nearest = point;}
+        if (Math.abs(point - projected) < Math.abs(nearest - projected)) {
+          nearest = point;
+        }
       }
       x.value = withSpring(nearest, {damping: 18, stiffness: 180});
     });

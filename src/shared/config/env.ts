@@ -63,7 +63,11 @@ export const env = {
     applicationId: AppEnv.applicationId,
     scheme:
       AppEnv.appScheme ??
-      (AppEnv.flavor === 'prod' ? 'mapper' : AppEnv.flavor === 'staging' ? 'mapperstg' : 'mapperdev'),
+      (AppEnv.flavor === 'prod'
+        ? 'mapper'
+        : AppEnv.flavor === 'staging'
+        ? 'mapperstg'
+        : 'mapperdev'),
   },
 
   /**

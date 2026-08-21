@@ -46,16 +46,16 @@ export function HomeScreen() {
     pushSnapshot();
 
     const subscription = AppState.addEventListener('change', state => {
-      if (state === 'active') {pushSnapshot();}
+      if (state === 'active') {
+        pushSnapshot();
+      }
     });
     return () => subscription.remove();
   }, [dispatch, pushSnapshot]);
 
   return (
     <Screen scroll>
-      <Text style={[theme.typography.h1, {color: theme.colors.text}]}>
-        {t('nav.home')}
-      </Text>
+      <Text style={[theme.typography.h1, {color: theme.colors.text}]}>{t('nav.home')}</Text>
       <Text style={[theme.typography.body, {color: theme.colors.textMuted, marginBottom: 24}]}>
         {user?.displayName ?? ''}
       </Text>
@@ -66,9 +66,7 @@ export function HomeScreen() {
             <Row label={t('widget.title')} value={`${widget.count}`} />
             <Row
               label={t('widget.updatedAt', {time: ''}).trim()}
-              value={
-                widget.lastWrittenAt ? dayjs(widget.lastWrittenAt).format('HH:mm:ss') : '—'
-              }
+              value={widget.lastWrittenAt ? dayjs(widget.lastWrittenAt).format('HH:mm:ss') : '—'}
             />
             <Row label="Nhịp làm mới" value={`${widget.refreshMinutes} phút`} />
           </>

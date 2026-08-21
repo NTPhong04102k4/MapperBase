@@ -82,9 +82,7 @@ jest.mock('react-native/Libraries/BatchedBridge/NativeModules', () => ({
     writeSnapshot: jest.fn(() => Promise.resolve(true)),
     clearSnapshot: jest.fn(() => Promise.resolve(true)),
     reload: jest.fn(() => Promise.resolve(true)),
-    isInstalled: jest.fn(() =>
-      Promise.resolve({installed: false, count: 0, refreshMinutes: 1}),
-    ),
+    isInstalled: jest.fn(() => Promise.resolve({installed: false, count: 0, refreshMinutes: 1})),
   },
   SettingsManager: {settings: {AppleLocale: 'vi_VN'}},
   I18nManager: {localeIdentifier: 'vi_VN'},
@@ -101,7 +99,12 @@ jest.mock('react-native-keychain', () => ({
 }));
 
 jest.mock('@react-native-google-signin/google-signin', () => ({
-  GoogleSignin: {configure: jest.fn(), signIn: jest.fn(), signOut: jest.fn(), hasPlayServices: jest.fn()},
+  GoogleSignin: {
+    configure: jest.fn(),
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+    hasPlayServices: jest.fn(),
+  },
   statusCodes: {SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED'},
 }));
 
@@ -128,6 +131,4 @@ jest.mock('@react-native-clipboard/clipboard', () => ({
 
 // Reanimated có sẵn bản mock chính thức; thiếu nó thì mọi component dùng
 // Animated đều ném lỗi worklet.
-jest.mock('react-native-reanimated', () =>
-  require('react-native-reanimated/mock'),
-);
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));

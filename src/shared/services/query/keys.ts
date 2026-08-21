@@ -13,8 +13,7 @@ export const queryKeys = {
     all: () => ['payments'] as const,
     detail: (orderId: string) => ['payments', 'detail', orderId] as const,
     status: (orderId: string) => ['payments', 'status', orderId] as const,
-    history: (filters?: Record<string, unknown>) =>
-      ['payments', 'history', filters ?? {}] as const,
+    history: (filters?: Record<string, unknown>) => ['payments', 'history', filters ?? {}] as const,
   },
 
   widget: {

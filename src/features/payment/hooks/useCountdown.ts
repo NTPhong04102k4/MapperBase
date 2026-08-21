@@ -28,7 +28,9 @@ export function useCountdown(target: string | number | Date | null): string | nu
 
     const start = () => {
       tick();
-      if (timerRef.current) {return;}
+      if (timerRef.current) {
+        return;
+      }
       timerRef.current = setInterval(tick, 1000);
     };
 
@@ -42,8 +44,11 @@ export function useCountdown(target: string | number | Date | null): string | nu
     start();
 
     const subscription = AppState.addEventListener('change', state => {
-      if (state === 'active') {start();}
-      else {stop();}
+      if (state === 'active') {
+        start();
+      } else {
+        stop();
+      }
     });
 
     return () => {
@@ -52,11 +57,15 @@ export function useCountdown(target: string | number | Date | null): string | nu
     };
   }, [target]);
 
-  if (target === null) {return null;}
+  if (target === null) {
+    return null;
+  }
   return formatDuration(remaining);
 }
 
 function computeRemaining(target: string | number | Date | null): number {
-  if (target === null) {return 0;}
+  if (target === null) {
+    return 0;
+  }
   return Math.max(0, new Date(target).getTime() - Date.now());
 }

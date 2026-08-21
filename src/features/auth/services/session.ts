@@ -43,7 +43,9 @@ const BIOMETRIC_GATE_SERVICE = 'vn.ttmedic.mapper.session-gate';
  */
 export async function enableBiometricUnlock(secret: string): Promise<boolean> {
   const status = await Biometric.getStatus();
-  if (!status.available) {return false;}
+  if (!status.available) {
+    return false;
+  }
 
   await Keychain.setGenericPassword('mapper', secret, {
     service: BIOMETRIC_GATE_SERVICE,
@@ -66,7 +68,9 @@ export function isBiometricUnlockEnabled(): boolean {
  * Không ném lỗi cho trường hợp huỷ: bấm Huỷ là hành động cố ý, không phải sự cố.
  */
 export async function unlockWithBiometrics(promptTitle: string): Promise<string | null> {
-  if (!isBiometricUnlockEnabled()) {return null;}
+  if (!isBiometricUnlockEnabled()) {
+    return null;
+  }
 
   try {
     const credentials = await Keychain.getGenericPassword({
@@ -102,7 +106,9 @@ export function persistSessionProfile(profile: SessionProfile): void {
 
 export function restoreCachedPermissions(): boolean {
   const raw = sessionStorage.getString(StorageKey.permissionRules);
-  if (!raw) {return false;}
+  if (!raw) {
+    return false;
+  }
   try {
     setAbilityRules(JSON.parse(raw));
     return true;

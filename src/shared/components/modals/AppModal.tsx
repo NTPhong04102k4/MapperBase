@@ -109,7 +109,9 @@ export function AppModal({
       progress.value = withTiming(1, SPRING);
     } else if (mounted) {
       progress.value = withTiming(0, SPRING, finished => {
-        if (finished) {runOnJS(setMounted)(false);}
+        if (finished) {
+          runOnJS(setMounted)(false);
+        }
       });
     }
     // `mounted` cố tình không nằm trong deps: thêm vào sẽ tạo vòng lặp
@@ -119,7 +121,9 @@ export function AppModal({
 
   // Nút back cứng Android.
   useEffect(() => {
-    if (!mounted) {return;}
+    if (!mounted) {
+      return;
+    }
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       onClose();
       return true; // đã xử lý, đừng thoát app
@@ -129,7 +133,9 @@ export function AppModal({
 
   const requestClose = useCallback(() => {
     progress.value = withTiming(0, SPRING, finished => {
-      if (finished) {runOnJS(finishClose)();}
+      if (finished) {
+        runOnJS(finishClose)();
+      }
     });
   }, [finishClose, progress]);
 
@@ -171,7 +177,9 @@ export function AppModal({
 
       if (goingToClose && (distance > DISMISS_THRESHOLD || velocity > DISMISS_VELOCITY)) {
         progress.value = withTiming(0, SPRING, finished => {
-          if (finished) {runOnJS(finishClose)();}
+          if (finished) {
+            runOnJS(finishClose)();
+          }
         });
       } else {
         drag.value = withTiming(0, {duration: 180});
@@ -204,7 +212,9 @@ export function AppModal({
     }
   });
 
-  if (!mounted) {return null;}
+  if (!mounted) {
+    return null;
+  }
 
   const panelLayout = getPanelLayout({
     variant,

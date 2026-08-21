@@ -32,8 +32,7 @@ export const WidgetBridge = {
 
   isInstalled(): Promise<WidgetInstallInfo> {
     return (
-      native?.isInstalled() ??
-      Promise.resolve({installed: false, count: 0, refreshMinutes: 5})
+      native?.isInstalled() ?? Promise.resolve({installed: false, count: 0, refreshMinutes: 5})
     );
   },
 };

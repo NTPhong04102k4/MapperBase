@@ -48,11 +48,16 @@ function describeError(error: unknown): {message: string; i18nKey?: string} {
   if (code === 'E_FR_AUTH') {
     return {message: '', i18nKey: 'auth.invalidCredentials'};
   }
-  return {message: error instanceof Error ? error.message : String(error), i18nKey: 'error.unknown'};
+  return {
+    message: error instanceof Error ? error.message : String(error),
+    i18nKey: 'error.unknown',
+  };
 }
 
 function isCancellation(error: unknown): boolean {
-  if (error instanceof SocialAuthCancelled) {return true;}
+  if (error instanceof SocialAuthCancelled) {
+    return true;
+  }
   const code = (error as {code?: string})?.code;
   return code === 'E_BIOMETRIC_CANCELLED' || code === 'E_FR_CANCELLED';
 }
@@ -125,7 +130,9 @@ function* loginWithCredentialsSaga(
   }
 }
 
-function* loginWithSocialSaga(action: ReturnType<typeof authActions.loginWithSocialRequested>): SagaIterator {
+function* loginWithSocialSaga(
+  action: ReturnType<typeof authActions.loginWithSocialRequested>,
+): SagaIterator {
   try {
     const {provider} = action.payload;
 
@@ -179,7 +186,9 @@ function* unlockSaga(): SagaIterator {
 
 function* enableBiometricSaga(): SagaIterator {
   const user: AuthUser | null = yield select((state: RootState) => state.auth.user);
-  if (!user) {return;}
+  if (!user) {
+    return;
+  }
 
   // Secret chỉ là "vật để OS gác" — giá trị của nó không quan trọng, quan trọng
   // là chỉ lấy ra được khi đã xác thực sinh trắc học.
@@ -188,7 +197,9 @@ function* enableBiometricSaga(): SagaIterator {
   yield put(authActions.biometricPreferenceChanged(ok));
 
   if (!ok) {
-    yield put(uiActions.toastShown({kind: 'warning', message: '', i18nKey: 'biometric.notEnrolled'}));
+    yield put(
+      uiActions.toastShown({kind: 'warning', message: '', i18nKey: 'biometric.notEnrolled'}),
+    );
   }
 }
 
@@ -212,7 +223,9 @@ function* enrollTransactionKeySaga(): SagaIterator {
     yield put(authActions.transactionKeyEnrolledChanged(true));
   } catch (error) {
     yield put(authActions.transactionKeyEnrolledChanged(false));
-    if (isCancellation(error)) {return;}
+    if (isCancellation(error)) {
+      return;
+    }
     yield put(uiActions.toastShown({kind: 'error', ...describeError(error)}));
   }
 }

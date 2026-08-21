@@ -67,10 +67,10 @@ type BackendErrorBody = {
   errors?: Record<string, string | string[]>;
 };
 
-function normalizeFieldErrors(
-  errors: BackendErrorBody['errors'],
-): Record<string, string> | null {
-  if (!errors) {return null;}
+function normalizeFieldErrors(errors: BackendErrorBody['errors']): Record<string, string> | null {
+  if (!errors) {
+    return null;
+  }
   const out: Record<string, string> = {};
   for (const [field, value] of Object.entries(errors)) {
     out[field] = Array.isArray(value) ? value[0] : value;
@@ -79,7 +79,9 @@ function normalizeFieldErrors(
 }
 
 export function toApiError(error: unknown): ApiError {
-  if (error instanceof ApiError) {return error;}
+  if (error instanceof ApiError) {
+    return error;
+  }
 
   if (axios.isCancel(error)) {
     return new ApiError({
@@ -135,7 +137,8 @@ function fromAxiosError(error: AxiosError<BackendErrorBody>): ApiError {
   };
 
   const mapped =
-    map[status] ?? (status >= 500 ? {kind: 'server' as ApiErrorKind, i18nKey: 'error.server'} : null);
+    map[status] ??
+    (status >= 500 ? {kind: 'server' as ApiErrorKind, i18nKey: 'error.server'} : null);
 
   return new ApiError({
     kind: mapped?.kind ?? 'unknown',

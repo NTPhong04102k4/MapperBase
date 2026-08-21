@@ -63,9 +63,7 @@ export function PlaygroundScreen() {
 
   const titleStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [0, 40], [1, 0], Extrapolation.CLAMP),
-    transform: [
-      {translateY: interpolate(scrollY.value, [0, 60], [0, -12], Extrapolation.CLAMP)},
-    ],
+    transform: [{translateY: interpolate(scrollY.value, [0, 60], [0, -12], Extrapolation.CLAMP)}],
   }));
 
   const sections: Array<{key: Section; label: string}> = [
@@ -138,9 +136,8 @@ export function PlaygroundScreen() {
             <View style={styles.gap} />
             <Card title="Ghi chú">
               <Text style={[theme.typography.body, {color: theme.colors.textMuted}]}>
-                Bottom / Header / Left / Right vuốt theo trục của mình để đóng.
-                Center cố tình KHÔNG vuốt đóng được — nó dùng cho việc buộc phải
-                chọn một phương án.
+                Bottom / Header / Left / Right vuốt theo trục của mình để đóng. Center cố tình KHÔNG
+                vuốt đóng được — nó dùng cho việc buộc phải chọn một phương án.
               </Text>
             </Card>
           </>
@@ -170,15 +167,7 @@ export function PlaygroundScreen() {
   );
 }
 
-function DemoBody({
-  title,
-  hint,
-  onClose,
-}: {
-  title: string;
-  hint: string;
-  onClose: () => void;
-}) {
+function DemoBody({title, hint, onClose}: {title: string; hint: string; onClose: () => void}) {
   const theme = useTheme();
   return (
     <View style={styles.demoBody}>

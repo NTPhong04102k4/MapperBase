@@ -59,11 +59,15 @@ export function maskFields<T extends Record<string, unknown>>(
     fieldsFrom: rule => rule.fields ?? Object.keys(item),
   });
 
-  if (allowed.length === Object.keys(item).length) {return item;}
+  if (allowed.length === Object.keys(item).length) {
+    return item;
+  }
 
   const out: Partial<T> = {};
   for (const key of allowed) {
-    if (key in item) {out[key as keyof T] = item[key as keyof T];}
+    if (key in item) {
+      out[key as keyof T] = item[key as keyof T];
+    }
   }
   return out;
 }
@@ -75,7 +79,9 @@ export function maskFields<T extends Record<string, unknown>>(
  * nhánh xử lý cho cả hai trường hợp.
  */
 export function assertCan(action: Action, subject: Subject | object): void {
-  if (getAbility().can(action, subject as never)) {return;}
+  if (getAbility().can(action, subject as never)) {
+    return;
+  }
 
   const rule = getAbility().relevantRuleFor(action, subject as never);
   throw new ApiError({

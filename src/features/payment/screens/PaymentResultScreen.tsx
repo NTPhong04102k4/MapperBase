@@ -58,8 +58,8 @@ export function PaymentResultScreen() {
           <View style={styles.gap} />
           <Card style={{borderColor: theme.colors.warning}}>
             <Text style={[theme.typography.body, {color: theme.colors.warning}]}>
-              Số tiền nhận được khác số tiền của đơn. Bộ phận kế toán sẽ đối
-              soát và liên hệ lại với bạn.
+              Số tiền nhận được khác số tiền của đơn. Bộ phận kế toán sẽ đối soát và liên hệ lại với
+              bạn.
             </Text>
           </Card>
         </>
