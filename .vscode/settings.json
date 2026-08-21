@@ -1,11 +1,53 @@
 {
-  "editor.tabSize": 2,
-  "editor.detectIndentation": false,
+  // ─────────────────────────────────────────────────────────────────────────
+  // PHÂN VAI: Prettier ĐỊNH DẠNG, ESLint bắt LỖI LOGIC.
+  //
+  // Trước đây file này đặt ESLint làm formatter (`defaultFormatter:
+  // dbaeumer.vscode-eslint`) trong khi eslint.config.js bật các rule định dạng
+  // mâu thuẫn với .prettierrc.js. Kết quả: 101/101 file trong src/ trượt
+  // `prettier --check` mà lint vẫn xanh, và autofix lúc save bẻ dòng xong không
+  // thụt lề lại — sinh ra code như
+  //     const styles=StyleSheet.create({\n  container:\n    {\nflex: 1,
+  // eslint.config.js nay kết thúc bằng `eslint-config-prettier`, nên ESLint
+  // không còn ý kiến gì về định dạng. Đừng đặt lại ESLint làm formatter.
+  // ─────────────────────────────────────────────────────────────────────────
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+  "[javascriptreact]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+  "[typescript]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+  "[typescriptreact]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+  "[json]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+  "[jsonc]": {"editor.defaultFormatter": "esbenp.prettier-vscode"},
+
+  // ESLint chỉ tự sửa phần logic sửa được (unused import, self-closing tag...).
+  // Định dạng do Prettier lo ở bước formatOnSave phía trên.
+  "editor.codeActionsOnSave": {"source.fixAll.eslint": "explicit"},
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.workingDirectories": [{"mode": "auto"}],
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // AUTO-IMPORT phải sinh ra `@/shared/...`, KHÔNG phải `../../../shared/...`.
+  //
+  // Giá trị cũ là "relative" — chống lại chính quy ước alias của repo
+  // (babel.config.js + tsconfig.json + jest.config.js đều map `@/` -> `src/`).
+  // "non-relative" ép VS Code ưu tiên alias khi import khác thư mục.
+  // ─────────────────────────────────────────────────────────────────────────
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "js/ts.preferences.importModuleSpecifierEnding": "index",
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+  "js/ts.reportStyleChecksAsWarnings": false,
+
+  // Khớp `printWidth: 100` trong .prettierrc.js (trước đây kẻ ở 120 — sai chỗ).
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.renderWhitespace": "all",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "editor.renderWhitespace": "all",
-  "editor.insertSpaces": true,
+  "files.eol": "\n",
+
   "files.exclude": {
     "**/.cache": true,
     "**/.git": true,
@@ -27,17 +69,9 @@
     "**/build": true,
     "**/dist": true
   },
-  "editor.rulers": [120],
-  "eslint.workingDirectories": [{ "mode": "auto" }],
   "files.associations": {
     "**/package.json.hbs": "json",
     "**/*.json.hbs": "jsonc"
   },
-  "javascript.preferences.importModuleSpecifier": "relative",
-  "javascript.preferences.importModuleSpecifierEnding": "index",
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.preferences.importModuleSpecifierEnding": "index",
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.reportStyleChecksAsWarnings": false,
   "json.format.enable": false
 }

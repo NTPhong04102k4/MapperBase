@@ -27,9 +27,16 @@ export function ThemeProvider({children}: {children: React.ReactNode}) {
   const systemScheme = useColorScheme();
   const [mode, setModeState] = useState<ThemeMode>(readStoredMode);
 
-  const resolved: 'light' | 'dark' =
-    mode === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : mode;
+  const isSystemMode = mode === 'system';
+  const isSystemSchemeDark = systemScheme === 'dark';
 
+  let resolved: 'light' | 'dark';
+
+  if (isSystemMode) {
+    resolved = isSystemSchemeDark ? 'dark' : 'light';
+  } else {
+    resolved = mode;
+  }
   const setMode = useCallback((next: ThemeMode) => {
     setModeState(next);
     appStorage.set(StorageKey.themeMode, next);
@@ -38,7 +45,11 @@ export function ThemeProvider({children}: {children: React.ReactNode}) {
   const toggle = useCallback(() => {
     setModeState(current => {
       const currentResolved =
-        current === 'system' ? (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light') : current;
+        current === 'system'
+          ? Appearance.getColorScheme() === 'dark'
+            ? 'dark'
+            : 'light'
+          : current;
       const next: ThemeMode = currentResolved === 'dark' ? 'light' : 'dark';
       appStorage.set(StorageKey.themeMode, next);
       return next;
@@ -54,7 +65,12 @@ export function ThemeProvider({children}: {children: React.ReactNode}) {
   }, [resolved]);
 
   const modeValue = useMemo<ThemeModeContextValue>(
-    () => ({mode, resolved, setMode, toggle}),
+    () => ({
+      mode,
+      resolved,
+      setMode,
+      toggle,
+    }),
     [mode, resolved, setMode, toggle],
   );
 

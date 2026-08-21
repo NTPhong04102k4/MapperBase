@@ -50,7 +50,12 @@ export function PaymentHistoryScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
-            onRefresh={refetch}
+            // `refetch` trả Promise nhưng onRefresh khai kiểu `() => void`. Truyền
+            // thẳng thì lỗi của refetch không ai bắt; bọc lại và nuốt có chủ đích
+            // (trạng thái lỗi đã hiển thị qua `error` ở ListEmptyComponent).
+            onRefresh={() => {
+              void refetch();
+            }}
             tintColor={theme.colors.primary}
           />
         }

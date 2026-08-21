@@ -16,14 +16,18 @@ const RETRY_MAX = 3;
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // 30 giây: đủ để chuyển tab qua lại không gọi lại API, đủ ngắn để dữ liệu
+      // 5 phút: đủ để chuyển tab qua lại không gọi lại API, đủ ngắn để dữ liệu
       // không cũ tới mức gây hiểu nhầm.
-      staleTime: 30_000,
-      gcTime: 5 * 60_000,
+      staleTime: 5 * 60_000,
+      gcTime: 10 * 60_000,
       retry: (failureCount, error) => {
-        if (failureCount >= RETRY_MAX) {return false;}
+        if (failureCount >= RETRY_MAX) {
+          return false;
+        }
         // Retry 401/403/404 là vô nghĩa và làm chậm màn hình lỗi.
-        if (error instanceof ApiError) {return error.isRetryable;}
+        if (error instanceof ApiError) {
+          return error.isRetryable;
+        }
         return true;
       },
       retryDelay: attempt => Math.min(1000 * 2 ** attempt, 8000),

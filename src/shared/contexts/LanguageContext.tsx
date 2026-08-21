@@ -1,7 +1,12 @@
 import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import {I18nManager} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import i18n, {DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, getInitialLanguage, type Language} from '../i18n';
+import i18n, {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+  getInitialLanguage,
+  type Language,
+} from '../i18n';
 import {StorageKey, appStorage} from '../services/storage/mmkv';
 
 type LanguageContextValue = {
@@ -23,7 +28,12 @@ export function LanguageProvider({children}: {children: React.ReactNode}) {
       return;
     }
     appStorage.set(StorageKey.language, next);
-    i18n.changeLanguage(next);
+    // changeLanguage trả Promise (i18next nạp resource bất đồng bộ). Resource ở
+    // đây đã bundle sẵn nên nó resolve ngay, nhưng vẫn phải bắt lỗi — bỏ trôi thì
+    // lỗi thành unhandled rejection và không ai biết ngôn ngữ đổi hụt.
+    i18n.changeLanguage(next).catch(error => {
+      console.warn('[LanguageProvider] Đổi ngôn ngữ thất bại', error);
+    });
     setLanguageState(next);
   }, []);
 

@@ -52,7 +52,9 @@ const SOCIAL_CLIENTS: Record<Flavor, SocialClientIds> = {
 let bootstrapped = false;
 
 export async function bootstrapAuth(): Promise<void> {
-  if (bootstrapped) {return;}
+  if (bootstrapped) {
+    return;
+  }
   bootstrapped = true;
 
   const clients = SOCIAL_CLIENTS[env.flavor];
@@ -67,9 +69,11 @@ export async function bootstrapAuth(): Promise<void> {
     authServiceName: env.forgeRock.loginJourney,
   });
 
-  // Google/Facebook: cấu hình đồng bộ, rẻ, không cần await.
+  // Google cấu hình đồng bộ. Facebook thì KHÔNG: `setAdvertiserTrackingEnabled`
+  // là async và phải xong trước `initializeSDK()`, nên configureFacebook trả
+  // Promise và phải await.
   configureGoogleSignIn(clients.googleWebClientId, clients.googleIosClientId);
-  configureFacebook(clients.facebookAppId, clients.facebookClientToken);
+  await configureFacebook(clients.facebookAppId, clients.facebookClientToken);
 
   // Apple không cần cấu hình trên iOS (capability là đủ); Android cấu hình
   // ngay tại chỗ gọi vì redirectUri phụ thuộc luồng.

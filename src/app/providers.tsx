@@ -11,6 +11,7 @@ import {ToastHost} from './feedback/ToastHost';
 import {AuthProvider} from '@/features/auth';
 import {LanguageProvider} from '@/shared/contexts/LanguageContext';
 import {ThemeProvider} from '@/shared/contexts/ThemeContext';
+import {StyleSheet} from 'react-native';
 
 /**
  * ⚠️ THỨ TỰ CÁC PROVIDER LÀ CÓ Ý, ĐỪNG SẮP XẾP LẠI CHO "GỌN".
@@ -28,7 +29,7 @@ import {ThemeProvider} from '@/shared/contexts/ThemeContext';
  */
 export function AppProviders({children}: {children: React.ReactNode}) {
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
+    <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
         <ReduxProvider store={store}>
           <QueryClientProvider client={queryClient}>
@@ -49,7 +50,11 @@ export function AppProviders({children}: {children: React.ReactNode}) {
     </GestureHandlerRootView>
   );
 }
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 export {useAuth} from '@/features/auth';
 export {useLanguage, useTranslation} from '@/shared/contexts/LanguageContext';
 export {useTheme, useThemeMode} from '@/shared/contexts/ThemeContext';

@@ -1,0 +1,2 @@
+// Đặt file font (.ttf / .otf) vào đây, rồi chạy `yarn assets:link` và rebuild native.
+// Tên file = giá trị `fontFamily` bạn viết trong StyleSheet. Ví dụ Inter-Bold.ttf -> fontFamily: 'Inter-Bold'.

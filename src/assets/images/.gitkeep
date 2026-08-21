@@ -1,0 +1,4 @@
+Đặt ảnh vào đây, import bằng alias: import logo from '@/assets/images/logo.png'.
+Không cần khai ở react-native.config.js — Metro tự xử lý ảnh.
+Đặt tên chỉ dùng [a-z0-9_] và -@2x/@3x: lúc build Android tên bị hạ thường và xoá
+mọi ký tự khác, nên `Logo-Dark.png` và `logodark.png` sẽ ghi đè nhau IM LẶNG.

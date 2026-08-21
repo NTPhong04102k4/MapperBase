@@ -39,7 +39,9 @@ let googleConfigured = false;
  * là bắt buộc, không còn tuỳ chọn.
  */
 export function configureGoogleSignIn(webClientId: string, iosClientId?: string): void {
-  if (googleConfigured) {return;}
+  if (googleConfigured) {
+    return;
+  }
   GoogleSignin.configure({
     webClientId,
     iosClientId,
@@ -80,13 +82,17 @@ export async function signInWithGoogle(): Promise<SocialLoginPayload> {
 
 // ── Facebook ────────────────────────────────────────────────────────────────
 
-export function configureFacebook(appId: string, clientToken: string): void {
+export async function configureFacebook(appId: string, clientToken: string): Promise<void> {
   Settings.setAppID(appId);
   Settings.setClientToken(clientToken);
   // iOS 14+: phải xin App Tracking Transparency trước khi bật tracking. Ta
   // không dùng quảng cáo nên tắt hẳn — bật mà không xin quyền là lý do bị từ
   // chối review.
-  Settings.setAdvertiserTrackingEnabled(false);
+  //
+  // `setAdvertiserTrackingEnabled` trả Promise<boolean> (xem FBSettings.d.ts),
+  // phải await TRƯỚC `initializeSDK()`: không await thì SDK có thể khởi tạo khi
+  // cờ tracking chưa kịp tắt.
+  await Settings.setAdvertiserTrackingEnabled(false);
   Settings.initializeSDK();
 }
 
@@ -198,8 +204,11 @@ export async function signInWithApple(): Promise<SocialLoginPayload> {
  * không hỏi — người dùng muốn đổi tài khoản sẽ không đổi được.
  */
 export async function signOutFromSocialProviders(): Promise<void> {
-  await Promise.allSettled([
-    googleConfigured ? GoogleSignin.signOut() : Promise.resolve(),
-    LoginManager.logOut(),
-  ]);
+  // `LoginManager.logOut()` trả về void, KHÔNG phải Promise (FBLoginManager.d.ts).
+  // Nhét nó vào Promise.allSettled không sai lúc chạy nhưng che mất sự thật đó —
+  // gọi thẳng cho đúng bản chất.
+  LoginManager.logOut();
+  // allSettled: một provider lỗi không được chặn provider kia, và hàm này không
+  // bao giờ được throw (nó chạy trong luồng logout).
+  await Promise.allSettled([googleConfigured ? GoogleSignin.signOut() : Promise.resolve()]);
 }

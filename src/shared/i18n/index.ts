@@ -36,27 +36,36 @@ export function getInitialLanguage(): Language {
   return detectSystemLanguage();
 }
 
-i18n.use(initReactI18next).init({
-  lng: getInitialLanguage(),
-  fallbackLng: DEFAULT_LANGUAGE,
-  supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-  defaultNS: 'translation',
-  resources: {
-    vi: {translation: vi},
-    en: {translation: en},
-  },
-  interpolation: {
-    // React đã escape sẵn; để i18next escape lần nữa sẽ làm hỏng ký tự tiếng Việt
-    // trong một số trường hợp (dấu nháy, &).
-    escapeValue: false,
-  },
-  returnNull: false,
-  // Chỉ log missing key ở dev — ở prod nó chỉ làm nhiễu console của khách.
-  debug: false,
-  saveMissing: __DEV__,
-  missingKeyHandler: __DEV__
-    ? (_lngs, _ns, key) => console.warn(`[i18n] Thiếu bản dịch cho key: ${key}`)
-    : undefined,
-});
+i18n
+  .use(initReactI18next)
+  .init({
+    lng: getInitialLanguage(),
+    fallbackLng: DEFAULT_LANGUAGE,
+    supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
+    defaultNS: 'translation',
+    resources: {
+      vi: {translation: vi},
+      en: {translation: en},
+    },
+    interpolation: {
+      // React đã escape sẵn; để i18next escape lần nữa sẽ làm hỏng ký tự tiếng Việt
+      // trong một số trường hợp (dấu nháy, &).
+      escapeValue: false,
+    },
+    returnNull: false,
+    // Chỉ log missing key ở dev — ở prod nó chỉ làm nhiễu console của khách.
+    debug: false,
+    saveMissing: __DEV__,
+    missingKeyHandler: __DEV__
+      ? (_lngs, _ns, key) => console.warn(`[i18n] Thiếu bản dịch cho key: ${key}`)
+      : undefined,
+  })
+  // init() trả Promise. Resource đã bundle sẵn nên nó resolve đồng bộ trong thực
+  // tế, nhưng đây là side-effect ở top-level module (App.tsx import file này để
+  // khởi tạo i18n trước khi màn nào render) — không bắt lỗi thì một cấu hình sai
+  // biến thành unhandled rejection lúc khởi động, không có dấu vết.
+  .catch(error => {
+    console.error('[i18n] Khởi tạo thất bại', error);
+  });
 
 export default i18n;

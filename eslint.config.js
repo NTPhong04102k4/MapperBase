@@ -3,6 +3,23 @@ import reactPlugin from 'eslint-plugin-react';
 import reactNativePlugin from 'eslint-plugin-react-native';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
+import prettierConfig from 'eslint-config-prettier';
+
+/**
+ * NGUYÊN TẮC CỦA FILE NÀY
+ *
+ * ESLint lo LOGIC. Prettier lo ĐỊNH DẠNG. Không chồng lấn.
+ *
+ * Trước đây file này bật `indent`, `object-curly-newline` và
+ * `object-property-newline` — ba rule định dạng — trong khi `.prettierrc.js` quy
+ * định ngược lại. Hệ quả đo được: 101/101 file trong `src/` trượt
+ * `prettier --check` mà `eslint .` vẫn xanh; và vì .vscode đặt ESLint làm
+ * formatter, `--fix` bẻ dòng xong không thụt lề lại, sinh ra code kiểu
+ * `const styles=StyleSheet.create({\n  container:\n    {\nflex: 1,`.
+ *
+ * `prettierConfig` ở CUỐI mảng tắt mọi rule đụng định dạng. Đừng thêm rule định
+ * dạng vào đây nữa — muốn đổi code trông ra sao thì sửa `.prettierrc.js`.
+ */
 
 /**
  * Global của môi trường Node, dùng cho file cấu hình và script build.
@@ -23,8 +40,9 @@ export default [
   ...tseslint.configs.recommended,
   {
     // Không lint output build, thư mục native và node_modules.
-    // `.gitnexus/` là file do tool sinh (CommonJS): flat config KHÔNG tự đọc .gitignore,
-    // nên phải liệt kê ở đây, nếu không `yarn lint` đỏ vì code không phải của app.
+    // `.gitnexus/` là file do tool sinh (CommonJS): flat config KHÔNG tự đọc
+    // .gitignore, nên phải liệt kê ở đây, nếu không `yarn lint` đỏ vì code không
+    // phải của app.
     ignores: [
       'node_modules/**',
       'android/**',
@@ -36,10 +54,25 @@ export default [
   },
   {
     // File cấu hình + script chạy bằng Node, không phải code app.
-    files: ['*.config.js', 'jest.setup.js', '.eslintrc.js', '.prettierrc.js', 'scripts/**/*.js'],
+    //
+    // Liệt kê ĐÍCH DANH thay vì `*.config.js`: pattern đó cũng khớp chính
+    // eslint.config.js — file này là ES module, gán `sourceType: 'commonjs'` cho
+    // nó là khai sai.
+    files: [
+      'babel.config.js',
+      'metro.config.js',
+      'jest.config.js',
+      'react-native.config.js',
+      'jest.setup.js',
+      '.prettierrc.js',
+      'scripts/**/*.js',
+    ],
     languageOptions: {
       sourceType: 'commonjs',
-      globals: {...nodeGlobals, jest: 'readonly'},
+      globals: {
+        ...nodeGlobals,
+        jest: 'readonly',
+      },
     },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
@@ -58,9 +91,7 @@ export default [
       react: {version: 'detect'},
     },
     languageOptions: {
-      parserOptions: {
-        ecmaFeatures: {jsx: true},
-      },
+      parserOptions: {ecmaFeatures: {jsx: true}},
       globals: {
         __DEV__: 'readonly',
         console: 'readonly',
@@ -71,127 +102,177 @@ export default [
         clearInterval: 'readonly',
       },
     },
-    // ---- NƠI THIẾT LẬP RULES ----
     rules: {
-      // 1. React Native Rules
-      /**
-       * Cảnh báo khi viết style trực tiếp (inline) trong component.
-       * Lý do: Ép viết style bằng StyleSheet.create để tối ưu hiệu năng render của Native tầng dưới.
-       */
-      // Cảnh báo inline style (bật 'error' nếu muốn nghiêm khắc)
+      // ======================================================
+      // 1. REACT NATIVE
+      // ======================================================
+
+      /** Ép style qua StyleSheet.create thay vì object inline mỗi lần render. */
       'react-native/no-inline-styles': 'warn',
-      /**
-       * Báo lỗi nếu khai báo một class style trong StyleSheet nhưng không dùng ở phần giao diện.
-       * Lý do: Giúp dọn dẹp code rác, giữ cho file code luôn sạch sẽ.
-       */
-      'react-native/no-unused-styles': 'error', // Lỗi nếu thừa style không dùng
 
       /**
-       * Báo lỗi nếu viết chữ (string) khơi khơi mà không bọc trong thẻ <Text>.
-       * Lý do: Tránh làm ứng dụng bị crash (sập) lập tức trên thiết bị Android và iOS.
+       * Style khai mà không dùng.
+       *
+       * ĐỂ 'warn' CÓ CHỦ Ý: rule chỉ nhìn thấy `StyleSheet.create({...})` viết
+       * trực tiếp. Với `makeStyles(theme => ({...}))` — pattern chính của repo —
+       * nó mù hoàn toàn (đã kiểm: style thừa trong makeStyles không bị bắt, cùng
+       * file thì style thừa trong StyleSheet.create lại bị bắt). Để 'error' chỉ
+       * tạo cảm giác an toàn giả.
        */
-      'react-native/no-raw-text': 'error', // Lỗi nếu viết chữ không bọc trong thẻ <Text>
-      /**
-       * Cảnh báo nếu truyền một mảng style nhưng thực chất chỉ chứa đúng 1 phần tử.
-       * Ví dụ sai: style={[styles.box]}. Đúng: style={styles.box}.
-       * Lý do: Tránh việc cấp phát mảng thừa thãi, làm tăng chi phí tính toán khi render.
-       */
-      'react-native/no-single-element-style-arrays': 'warn', //  Tránh mảng style thừa
+      'react-native/no-unused-styles': 'warn',
 
       /**
-       * Báo lỗi nếu dùng sai component đặc thù của nền tảng này sang nền tảng khác.
-       * Ví dụ: Dụng cụ chỉnh ngày dạng iOS (DatePickerIOS) trên thiết bị Android.
+       * Chuỗi không bọc trong <Text> làm app crash trên thiết bị.
+       *
+       * LƯU Ý: rule báo nhầm với mọi component chữ tự viết — `<AppText>Xin
+       * chào</AppText>` bị coi là raw text (đã kiểm). Khi dựng design-system có
+       * component chữ riêng, thêm tên nó vào `skip` chứ đừng tắt rule.
        */
-      'react-native/split-platform-components': 'error', //  Tránh dùng sai component nền tảng
-      // 2. React Hooks Rules
-      /**
-       * Báo lỗi nặng nếu vi phạm các quy tắc cơ bản của React Hooks.
-       * Ví dụ: Gọi useState/useEffect bên trong vòng lặp 'for' hoặc câu lệnh rẽ nhánh 'if'.
-       */
-      'react-hooks/rules-of-hooks': 'error', // Sai luật Hook = Lỗi đỏ
+      'react-native/no-raw-text': ['error', {skip: []}],
 
-      /**
-       * Cảnh báo khi danh sách phụ thuộc (dependency array) của useEffect/useCallback bị thiếu biến.
-       * Lý do: Tránh lỗi app sử dụng dữ liệu cũ (stale data) hoặc gây ra vòng lặp vô hạn.
-       */
-      'react-hooks/exhaustive-deps': 'warn', // Cảnh báo thiếu dependency
+      /** style={[styles.box]} -> style={styles.box}. Bớt một lần cấp phát mảng. */
+      'react-native/no-single-element-style-arrays': 'warn',
 
-      // 3. Clean Code & Tối ưu hóa
+      /** Dùng component đặc thù nền tảng này trên nền tảng kia. */
+      'react-native/split-platform-components': 'error',
 
-      // ==========================================
-      // 3. TỐI ƯU HÓA REACT COMPONENT (UI/UX)
-      // ==========================================
+      // ======================================================
+      // 2. REACT HOOKS — hai rule giá trị nhất trong file này
+      // ======================================================
 
-      /**
-       * Tắt quy tắc bắt buộc phải 'import React from "react"' ở đầu mọi file chứa JSX.
-       * Lý do: Từ phiên bản React mới, trình biên dịch đã tự xử lý, việc import thủ công là dư thừa.
-       */
+      /** Gọi hook trong if/for = state lệch giữa các lần render. Không thương lượng. */
+      'react-hooks/rules-of-hooks': 'error',
+
+      /** Thiếu dependency = đọc dữ liệu cũ, hoặc effect chạy vô hạn. */
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // ======================================================
+      // 3. REACT
+      // ======================================================
+
+      /** React 17+ tự inject JSX runtime, không cần import React. */
       'react/react-in-jsx-scope': 'off',
 
       /**
-       * Nghiêm cấm việc khai báo một Component mới ngay BÊN TRONG hàm render của một Component khác.
-       * Lý do: Đây là nguyên nhân hàng đầu gây lỗi mất focus bàn phím và ép app re-render liên tục gây giật lag.
+       * Khai component bên trong render của component khác: mỗi lần cha render là
+       * một type mới -> React unmount/mount lại cả cây con, mất focus bàn phím,
+       * mất state. Nguyên nhân bug UI hàng đầu.
        */
       'react/no-unstable-nested-components': 'error',
 
-      /**
-       * Báo lỗi nếu truyền hai thuộc tính (props) trùng tên nhau vào cùng một thẻ component.
-       * Ví dụ sai: <View style={s1} style={s2} />.
-       */
       'react/jsx-no-duplicate-props': 'error',
-
-      /**
-       * Bắt buộc các thẻ component không có nội dung con (children) bên trong phải tự đóng thẻ bằng dấu '/>'.
-       * Ví dụ đúng: <Image />. Sai: <Image></Image>.
-       */
       'react/self-closing-comp': 'error',
 
-      // ==========================================
-      // 4. CHẤT LƯỢNG CODE & LOGIC HỆ THỐNG
-      // ==========================================
+      // ======================================================
+      // 4. LOGIC & CHẤT LƯỢNG
+      // ======================================================
 
-      /**
-       * Ngăn chặn việc lạm dụng console.log bừa bãi trong dự án.
-       * Lý do: Khi đóng gói ứng dụng chạy thực tế, quá nhiều lệnh log chạy ngầm sẽ làm thắt nút cổ chai hiệu năng.
-       * Chỉ cho phép dùng console.warn và console.error để báo cáo sự cố quan trọng.
-       */
+      /** console.log vào bản release là rác + rò rỉ thông tin. warn/error thì được. */
       'no-console': ['warn', {allow: ['warn', 'error']}],
 
-      /**
-       * Báo lỗi nếu khai báo biến, nhận tham số hoặc import thư viện về nhưng bỏ không, không dùng đến.
-       * Lý do: Giữ cho bộ nhớ RAM nhẹ hơn và code không bị rối mắt.
-       */
       '@typescript-eslint/no-unused-vars': 'error',
-
-      /**
-       * Bắt buộc phải sử dụng phép so sánh tuyệt đối '===' và '!==' thay vì phép so sánh tương đối '==' và '!='.
-       * Lý do: Tránh lỗi logic nghiêm trọng do JavaScript tự động ép kiểu sai (Ví dụ: [] == false là true).
-       */
       eqeqeq: ['error', 'always'],
-
-      /**
-       * Nghiêm cấm việc viết nhiều dòng import từ cùng một thư viện độc lập.
-       * Lý do: Gom gọn code gọn gàng trên một dòng duy nhất.
-       */
-      'no-duplicate-imports': 'error',
-
-      /**
-       * Bắt buộc tất cả các khối lệnh rẽ nhánh hoặc vòng lặp (if, else, for, while) đều phải được bọc trong cặp dấu ngoặc nhọn '{}'.
-       * Lý do: Tránh lỗi hiểu lầm logic khi viết code thẳng hàng nhưng thực chất không nằm trong điều kiện.
-       */
       curly: 'error',
-
-      /**
-       * Nghiêm cấm việc gán lại trực tiếp giá trị mới cho tham số đầu vào của một hàm.
-       * Lý do: Giữ vững tính chất bất biến (immutability) của dữ liệu, tránh gây lỗi không thể kiểm soát ở các file khác.
-       */
       'no-param-reassign': 'error',
 
       /**
-       * Cảnh báo khi lạm dụng viết toán tử ba ngôi lồng nhau nhiều tầng (Ví dụ: a ? b : c ? d : e).
-       * Lý do: Giảm tải độ phức tạp về mặt thị giác, ép lập trình viên nên chuyển sang cấu trúc if/else rõ ràng hơn.
+       * Ternary lồng nhau khó đọc.
+       *
+       * ĐỂ 'warn': đừng để rule này ép tách thành if/else dài dòng và xấu hơn bản
+       * gốc. Nếu bản ternary rõ hơn thì `// eslint-disable-next-line` kèm lý do.
        */
       'no-nested-ternary': 'warn',
+
+      /**
+       * Chặn các dạng import sai quy ước.
+       *
+       * `@` ĐÃ trỏ vào `src`, nên `@/src/...` phân giải thành `src/src/...` —
+       * không tồn tại, nhưng lỗi hiện ra ở chỗ khác nên khó lần. Chặn thẳng.
+       */
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/src', '@/src/*'],
+              message:
+                "Alias '@' đã trỏ vào src/. Viết '@/shared/...' chứ không phải '@/src/shared/...'.",
+            },
+            {
+              group: ['src/*'],
+              message:
+                "Import khác module thì dùng alias '@/...', không dùng đường dẫn trần 'src/...'.",
+            },
+          ],
+        },
+      ],
+
+      // KHÔNG bật 'no-duplicate-imports': nó báo lỗi với idiom TypeScript
+      // `import type {Theme} from './x'` + `import {value} from './x'` (đã kiểm).
+      // Muốn gộp thì dùng inline type import: `import {value, type Theme}`.
     },
   },
+  {
+    /**
+     * RULE CẦN THÔNG TIN KIỂU.
+     *
+     * Chậm hơn (~7s cho cả src/) nên chỉ bật cho file thật sự nằm trong
+     * tsconfig.json — file cấu hình .js không nằm trong đó, bật cho chúng sẽ lỗi
+     * "file not found in project".
+     *
+     * Đây là phần bắt lỗi thật mà lint cú pháp không thấy được: lần đầu bật đã ra
+     * 5 promise bị thả nổi (SplashScreen.hide(), Settings.initializeSDK(), i18n
+     * init...) và 1 handler async truyền vào prop mong đợi void.
+     */
+    files: ['src/**/*.{ts,tsx}', 'App.tsx', '__tests__/**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {projectService: true},
+    },
+    rules: {
+      /** Promise không await/catch: lỗi biến mất im lặng thành unhandled rejection. */
+      '@typescript-eslint/no-floating-promises': 'error',
+
+      /** Hàm async truyền vào chỗ mong đợi void (onPress, useEffect): lỗi không ai bắt. */
+      '@typescript-eslint/no-misused-promises': 'error',
+
+      /** `await` trên giá trị không phải Promise = hiểu sai API đang gọi. */
+      '@typescript-eslint/await-thenable': 'error',
+    },
+  },
+  {
+    /**
+     * CỬA VÀO CỦA FEATURE AUTH.
+     *
+     * CLAUDE.md: barrel UI `@/features/auth` kéo theo AuthContext -> store/hooks
+     * -> store/index -> rootSaga -> quay lại barrel, tạo vòng import lúc chạy
+     * ("Cannot access '...' before initialization" ở một file ngẫu nhiên). Tầng
+     * saga/service/store phải đi cửa thứ hai: `@/features/auth/services`.
+     */
+    files: [
+      'src/features/*/services/**/*.{ts,tsx}',
+      'src/features/*/store/**/*.{ts,tsx}',
+      'src/store/**/*.{ts,tsx}',
+    ],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/features/auth',
+              message:
+                'Tầng saga/service/store phải import từ @/features/auth/services — barrel UI tạo vòng import lúc chạy (xem CLAUDE.md).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  /**
+   * PHẢI Ở CUỐI CÙNG. Tắt mọi rule ESLint đụng tới định dạng để Prettier là nguồn
+   * sự thật duy nhất. Thêm config mới thì thêm PHÍA TRÊN dòng này.
+   */
+  prettierConfig,
 ];

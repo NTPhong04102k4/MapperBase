@@ -55,9 +55,16 @@ export function RootNavigator() {
    * Native có watchdog 8 giây nên kể cả bootstrap treo, splash vẫn tự tắt.
    */
   const hideSplashOnce = useCallback(() => {
-    if (splashHidden.current) {return;}
+    if (splashHidden.current) {
+      return;
+    }
     splashHidden.current = true;
-    SplashScreen.hide();
+    // hide() trả Promise<boolean>. Không bắt lỗi thì reject thành unhandled
+    // rejection; ở đây thất bại là không nghiêm trọng (watchdog 8 giây bên native
+    // vẫn tắt splash), nhưng phải nuốt có chủ đích chứ không bỏ trôi.
+    SplashScreen.hide().catch(error => {
+      console.warn('[RootNavigator] SplashScreen.hide() thất bại', error);
+    });
   }, []);
 
   useEffect(() => {
